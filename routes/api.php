@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\Api\PostController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,8 +23,18 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware(['checkAge'])->group(function () {
     //
     Route::get('/test', 'App\Http\Controllers\TestController@functionTest');
+
 });
 
 Route::middleware(['auth']) -> group(function () {
-   Route::get('/category', 'App\Http\Controllers\CategoriesController@getAllCategory');
+
 });
+Route::post('/category', 'App\Http\Controllers\CategoriesController@createCategory');
+Route::put('/category/{id}', 'App\Http\Controllers\CategoriesController@updateCategory');
+Route::get('/category', 'App\Http\Controllers\CategoriesController@getAllCategory');
+Route::delete('/category/{id}', 'App\Http\Controllers\CategoriesController@deleteCategory');
+
+
+
+//Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
+//Route::apiResource('posts',PostController::class);
