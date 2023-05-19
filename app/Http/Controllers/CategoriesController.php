@@ -16,17 +16,18 @@ class CategoriesController extends Controller
 
     public function createCategory(Request $request)
     {
-        $this->validate($request, ['name' => 'required', 'parent_id' => 'required', 'created_by' => 'required', 'updated_by' => 'required']);
+        //$this->validate($request, ['name' => 'required', 'parent_id' => 'required', 'created_by' => 'required', 'updated_by' => 'required']);
         $category = Category::create($request->all());
         $this->status = 'success';
         $this->message = 'message';
         return $this->responseData($category);
     }
 
-    public function updateCategory($id, Request $request)
+    public function updateCategory(Request $request, $id)
     {
         $category = Category::findOrFail($id);
-        //dd($category);
+        dd($request);
+        //$category = Category::find($id);
         $category->update($request->all());
         $this->status = 'success';
         $this->message = 'message';

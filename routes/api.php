@@ -34,7 +34,10 @@ Route::put('/category/{id}', 'App\Http\Controllers\CategoriesController@updateCa
 Route::get('/category', 'App\Http\Controllers\CategoriesController@getAllCategory');
 Route::delete('/category/{id}', 'App\Http\Controllers\CategoriesController@deleteCategory');
 
-
+Route::post('/product', '\App\Http\Controllers\ProductController@addNewProduct' );
+Route::get('/product', '\App\Http\Controllers\ProductController@getAllProducts');
+Route::put('/product/{id}', '\App\Http\Controllers\ProductController@updateProduct');
+Route::delete('/product/{id}', '\App\Http\Controllers\ProductController@deleteProduct');
 
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
 //Route::apiResource('posts',PostController::class);
