@@ -17,8 +17,7 @@ class CreateCategoriesTable extends Migration
             $table->id();
             $table->string('name');
             $table->integer('parent_id');
-            $table->string('created_by');
-            $table->string('updated_by');
+            $table->text('description');
             $table->timestamps();
         });
     }

@@ -10,6 +10,6 @@ class Category extends Model
     protected $table = 'categories';
 
 
-    protected $fillable = ['name', 'parent_id', 'created_by', 'updated_by', 'created_at', 'updated_at'];
+    protected $fillable = ['name', 'parent_id',  'description', 'created_at', 'updated_at'];
 
 }
