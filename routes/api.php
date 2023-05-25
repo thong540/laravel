@@ -30,15 +30,31 @@ Route::middleware(['checkAge'])->group(function () {
 Route::middleware(['auth'])->group(function () {
 
 });
-Route::post('/category', 'App\Http\Controllers\CategoriesController@createCategory');
-Route::put('/category/{id}', 'App\Http\Controllers\CategoriesController@updateCategory');
-Route::get('/category', 'App\Http\Controllers\CategoriesController@getAllCategory');
-Route::delete('/category/{id}', 'App\Http\Controllers\CategoriesController@deleteCategory');
+Route::post('/create-category', 'App\Http\Controllers\CategoryController@createCategory');
+Route::post('/update-category', 'App\Http\Controllers\CategoryController@updateCategory');
+Route::get('/category', 'App\Http\Controllers\CategoryController@getAllCategories');
+Route::delete('/delete-category/', 'App\Http\Controllers\CategoryController@deleteCategory');
 
-Route::post('/product', '\App\Http\Controllers\ProductController@addNewProduct');
+Route::post('/create-product', '\App\Http\Controllers\ProductController@addNewProduct');
 Route::get('/product', '\App\Http\Controllers\ProductController@getAllProducts');
-Route::put('/product/{id}', '\App\Http\Controllers\ProductController@updateProduct');
-Route::delete('/product/{id}', '\App\Http\Controllers\ProductController@deleteProduct');
+Route::post('/update-product', '\App\Http\Controllers\ProductController@updateProduct');
+Route::delete('/delete-product', '\App\Http\Controllers\ProductController@deleteProduct');
+
+Route::post('/create-customer', 'App\Http\Controllers\CustomerController@createCustomer');
+Route::post('/update-customer', 'App\Http\Controllers\CustomerController@updateCustomer');
+Route::get('/customer', 'App\Http\Controllers\CustomerController@getAllCustomers');
+Route::delete('/delete-customer', 'App\Http\Controllers\CustomerController@deleteCustomer');
+
+Route::post('/create-user', 'App\Http\Controllers\UserController@createUser');
+Route::post('/update-user', 'App\Http\Controllers\UserController@updateUser');
+Route::get('/user', 'App\Http\Controllers\UserController@getAllUsers');
+Route::delete('/delete-user', 'App\Http\Controllers\UserController@deleteUser');
+
+Route::post('/create-order', 'App\Http\Controllers\OrderController@createOrder');
+Route::post('/update-order', 'App\Http\Controllers\OrderController@updateOrder');
+Route::get('/get-all-order', 'App\Http\Controllers\OrderController@getAllOrders');
+Route::delete('/delete-order', 'App\Http\Controllers\OrderController@deleteOrder');
+
 
 Route::post('/login', '\App\Http\Controllers\LoginController@login');
 Route::post('/register', '\App\Http\Controllers\RegisterController@register');

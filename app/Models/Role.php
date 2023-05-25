@@ -8,7 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Role extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'created_at', 'updated_at'];
+    const TABLE = 'roles';
+    const _ID = 'id';
+    const _NAME = 'name';
+    const _DESCRIPTION = 'description';
+    const _CREATED_AT = 'created_at';
+    const _UPDATED_AT = 'updated_at';
+    protected $fillable = [
+        self::_ID,
+        self::_NAME,
+        self::_DESCRIPTION,
+        self::_CREATED_AT,
+        self::_UPDATED_AT
+    ];
 
 //    public function users()
 //    {
