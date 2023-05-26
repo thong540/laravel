@@ -30,7 +30,6 @@ class CustomerController extends Controller
         $phoneNumber = $request->input('phoneNumber');
         $dataInsert = [
             Customer::_EMAIL => $email,
-            Customer::_PASSWORD => $password,
             Customer::_FULLNAME => $fullName,
             Customer::_ADDRESS => $address,
             Customer::_PHONENUMBER => $phoneNumber,
@@ -54,13 +53,11 @@ class CustomerController extends Controller
     {
         $id = $request->input('id');
         $email = $request->input('email');
-        $password = $request->input('password');
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
         $dataUpdate = [
             Customer::_EMAIL => $email,
-            Customer::_PASSWORD => $password,
             Customer::_FULLNAME => $fullName,
             Customer::_ADDRESS => $address,
             Customer::_PHONENUMBER => $phoneNumber,

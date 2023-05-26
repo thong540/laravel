@@ -12,7 +12,6 @@ class Customer extends Model
     const TABLE = 'customers';
     const _ID = 'id';
     const _EMAIL = 'email';
-    const _PASSWORD = 'password';
     const _FULLNAME = 'fullName';
     const _ADDRESS = 'address';
     const _PHONENUMBER = 'phoneNumber';
@@ -21,7 +20,6 @@ class Customer extends Model
     protected $fillable = [
         self::_ID,
         self::_EMAIL,
-        self::_PASSWORD,
         self::_FULLNAME,
         self::_ADDRESS,
         self::_PHONENUMBER,

@@ -18,4 +18,5 @@ class CustomerRepository extends EloquentRepository
             ->update($dataUpdate);
     }
 
+
 }
