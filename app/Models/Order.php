@@ -9,6 +9,7 @@ class Order extends Model
 {
 
     use HasFactory;
+    public $timestamps = false;
     const TABLE = 'orders';
     const _ID = 'id';
     const _NAME = 'name';

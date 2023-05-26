@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     use HasFactory;
+    public $timestamps = false;
     const TABLE = 'products';
     const _ID = 'id';
     const _NAME = 'name';

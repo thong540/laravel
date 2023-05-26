@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Role extends Model
 {
     use HasFactory;
+    public $timestamps = false;
     const TABLE = 'roles';
     const _ID = 'id';
     const _NAME = 'name';

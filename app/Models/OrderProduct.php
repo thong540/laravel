@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class OrderProduct extends Model
 {
     use HasFactory;
+    public $timestamps = false;
     const TABLE = 'order_products';
     const _ID = 'id';
     const _ID_ORDER_ID = 'order_id';

@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $table = 'categories';
 
+    protected $table = 'categories';
+    public $timestamps = false;
     const TABLE = 'categories';
     const _ID = 'id';
     const _NAME = 'name';

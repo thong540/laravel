@@ -35,7 +35,7 @@ Route::post('/update-category', 'App\Http\Controllers\CategoryController@updateC
 Route::get('/category', 'App\Http\Controllers\CategoryController@getAllCategories');
 Route::delete('/delete-category/', 'App\Http\Controllers\CategoryController@deleteCategory');
 
-Route::post('/create-product', '\App\Http\Controllers\ProductController@addNewProduct');
+Route::post('/create-product', '\App\Http\Controllers\ProductController@createProduct');
 Route::get('/product', '\App\Http\Controllers\ProductController@getAllProducts');
 Route::post('/update-product', '\App\Http\Controllers\ProductController@updateProduct');
 Route::delete('/delete-product', '\App\Http\Controllers\ProductController@deleteProduct');
@@ -52,7 +52,7 @@ Route::delete('/delete-user', 'App\Http\Controllers\UserController@deleteUser');
 
 Route::post('/create-order', 'App\Http\Controllers\OrderController@createOrder');
 Route::post('/update-order', 'App\Http\Controllers\OrderController@updateOrder');
-Route::get('/get-all-order', 'App\Http\Controllers\OrderController@getAllOrders');
+Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
 Route::delete('/delete-order', 'App\Http\Controllers\OrderController@deleteOrder');
 
 

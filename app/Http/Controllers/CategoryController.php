@@ -41,11 +41,11 @@ class CategoryController extends Controller
 
         $check = $this->categoryRepo->insert($dataInsert);
         if (!$check) {
-            $this->message = 'tạo mới thất bại';
+            $this->message = 'No create new user';
             goto next;
         }
         $this->status = 'success';
-        $this->message = 'message';
+        $this->message = 'created new user';
         next:
         return $this->responseData();
     }
@@ -71,7 +71,7 @@ class CategoryController extends Controller
             goto next;
         }
         $this->status = 'success';
-        $this->message = 'message';
+        $this->message = 'updated category';
         next:
         return $this->responseData();
     }
@@ -87,7 +87,7 @@ class CategoryController extends Controller
             goto next;
         }
         $this->status = 'success';
-        $this->message = 'message';
+        $this->message = 'deleted category';
         next:
         return $this->responseData();
     }

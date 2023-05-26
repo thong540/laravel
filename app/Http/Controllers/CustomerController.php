@@ -44,7 +44,7 @@ class CustomerController extends Controller
             goto next;
         }
         $this->status = 'success';
-        $this->message = 'message';
+        $this->message = 'created new customer';
         next:
         return $this->responseData();
 
@@ -74,7 +74,7 @@ class CustomerController extends Controller
             goto next;
         }
         $this->status = 'success';
-        $this->message = 'message';
+        $this->message = 'updated customer';
         next:
         return $this->responseData();
 
@@ -90,7 +90,7 @@ class CustomerController extends Controller
             goto next;
         }
         $this->status = 'success';
-        $this->message = 'message';
+        $this->message = 'deleted customer';
         next:
         return $this->responseData();
     }

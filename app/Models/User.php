@@ -11,6 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Model
 {
+    public $timestamps = false;
     const TABLE = 'users';
     const _ID = 'id';
     const _EMAIL = 'email';

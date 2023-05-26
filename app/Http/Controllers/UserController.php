@@ -61,7 +61,7 @@ class UserController extends Controller
             User::_PHONENUMBER => $phoneNumber
 
         ];
-        $check = $this->userRepo->updateById($id, $dataUpdate);
+        $check = $this->userRepo->update($id, $dataUpdate);
         if (!$check) {
             $this->message = 'No update user';
             goto next;
@@ -78,6 +78,7 @@ class UserController extends Controller
         $id = $request->input('id');
 
         $check = $this->userRepo->delete($id);
+//        dd($check);
         if (!$check) {
             $this->message = 'No delete user';
             goto next;
