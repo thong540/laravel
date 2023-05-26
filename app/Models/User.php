@@ -31,9 +31,9 @@ class User extends Model
         self::_CREATED_AT.
         self::_UPDATED_AT
     ];
-    protected $hidden = [
-        self::_PASSWORD
-    ];
+//    protected $hidden = [
+//        self::_PASSWORD
+//    ];
 //    public function roles()
 //    {
 //        return $this->belongsToMany(Role::class, 'user_role');

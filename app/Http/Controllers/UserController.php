@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -26,7 +27,7 @@ class UserController extends Controller
         $phoneNumber = $request->input('phoneNumber');
         $dataInsert = [
             User::_EMAIL => $email,
-            User::_PASSWORD => $password,
+            User::_PASSWORD => Hash::make($password),
             User::_FULLNAME => $fullName,
             User::_ADDRESS => $address,
             User::_PHONENUMBER => $phoneNumber,
@@ -55,7 +56,7 @@ class UserController extends Controller
         $phoneNumber = $request->input('phoneNumber');
         $dataUpdate = [
             User::_EMAIL => $email,
-            User::_PASSWORD => $password,
+            User::_PASSWORD => Hash::make($password),
             User::_FULLNAME => $fullName,
             User::_ADDRESS => $address,
             User::_PHONENUMBER => $phoneNumber

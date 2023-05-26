@@ -56,8 +56,8 @@ Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
 Route::delete('/delete-order', 'App\Http\Controllers\OrderController@deleteOrder');
 
 
-Route::post('/login', '\App\Http\Controllers\LoginController@login');
-Route::post('/register', '\App\Http\Controllers\RegisterController@register');
+Route::post('/login', '\App\Http\Controllers\AuthController@login');
+Route::post('/register', '\App\Http\Controllers\AuthController@register');
 
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
 //Route::apiResource('posts',PostController::class);

@@ -133,6 +133,36 @@ return [
     | this array to grant expanded functionality to your applications.
     |
     */
+    /*
+       |--------------------------------------------------------------------------
+       | Authentication Defaults
+
+       */
+
+    'defaults' => [
+        'guard' => 'api',//default "web"
+        'passwords' => 'users',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Guards
+
+    |
+    */
+
+    'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
+        'api' => [
+            'driver' => 'jwt',  //default "token"
+            'provider' => 'users',
+            'hash' => false,
+        ],
+    ],
+
 
     'providers' => [
 
@@ -174,6 +204,8 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+
 
     ],
 
@@ -230,6 +262,9 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'DB' => Illuminate\Support\Facades\DB::class,
+        'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
+        'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+
     ],
 
 ];

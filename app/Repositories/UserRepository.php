@@ -12,4 +12,5 @@ class UserRepository extends EloquentRepository
         return User::class;
     }
 
+
 }
