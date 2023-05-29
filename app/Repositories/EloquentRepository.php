@@ -82,6 +82,7 @@ abstract class EloquentRepository implements RepositoryInterface
     public function insert(array $attributes)
     {
         return $this->_model->insert($attributes);
+
     }
 
 

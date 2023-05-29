@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Repositories\OrderRepository;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -23,6 +26,12 @@ class OrderController extends Controller
     }
     function createOrder(Request $request)
     {
+        $decoded = JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJqdGkiOiIwQVNFTk9qVVNmbGY3SC9SUHdVaW9RPT0iLCJpc3MiOiJ5b3VyLnNlcnZlci5uYW1lIiwiZXhwIjoxNjg1NDEzNDA2LCJkYXRhIjp7InVzZXJJRCI6MywibmFtZSI6InF3ZSIsImVtYWlsIjoidGVzdCJ9fQ.9W8egyJkIxoExtnqghAWIpBgxZkugbMRrYLWXc-oCz2eKuGVIZCKxOJDuZMN0iUFebQnotrb-P06-lN1r8zWjQ', new Key(env('JWT_KEY'), 'HS512'));
+        //$apy = Auth::user();
+       // $request->attributes = $decoded['data'];
+        //dd($decoded);
+        $decoded_array = (array) $decoded;
+       //dd($decoded_array['data']); //dd($apy->toArray());
         $request->validate(
             [
                 'name' => ['required', 'min:3'],

@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
-class User extends Model
+use Tymon\JWTAuth\Contracts\JWTSubject;
+//use Illuminate\Foundation\Auth\User as Authenticatable;
+class User extends Authenticatable implements JWTSubject
 {
     public $timestamps = false;
     const TABLE = 'users';
@@ -38,4 +39,15 @@ class User extends Model
 //    {
 //        return $this->belongsToMany(Role::class, 'user_role');
 //    }
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
 }
+
+

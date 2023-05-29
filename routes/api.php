@@ -27,8 +27,8 @@ Route::middleware(['checkAge'])->group(function () {
 
 });
 
-Route::middleware(['auth'])->group(function () {
-
+Route::middleware(['checkToken'])->group(function () {
+    Route::post('/create-order', 'App\Http\Controllers\OrderController@createOrder');
 });
 Route::post('/create-category', 'App\Http\Controllers\CategoryController@createCategory');
 Route::post('/update-category', 'App\Http\Controllers\CategoryController@updateCategory');
@@ -50,13 +50,13 @@ Route::post('/update-user', 'App\Http\Controllers\UserController@updateUser');
 Route::get('/user', 'App\Http\Controllers\UserController@getAllUsers');
 Route::delete('/delete-user', 'App\Http\Controllers\UserController@deleteUser');
 
-Route::post('/create-order', 'App\Http\Controllers\OrderController@createOrder');
+
 Route::post('/update-order', 'App\Http\Controllers\OrderController@updateOrder');
 Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
 Route::delete('/delete-order', 'App\Http\Controllers\OrderController@deleteOrder');
 
 
-Route::post('/login', '\App\Http\Controllers\AuthController@login');
+Route::post('/login', '\App\Http\Controllers\Auth1Controller@login');
 Route::post('/register', '\App\Http\Controllers\AuthController@register');
 
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');

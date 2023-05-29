@@ -9,17 +9,49 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-
-class AuthController extends Controller
+use Firebase\JWT\JWT;
+class Auth1Controller extends Controller
 {
-    private $userRepository, $customerRepository;
+    private $userRepository;
 
     function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
 
     }
+    function GenerateToken ($user)
+    {
+        $secretKey  = env('JWT_KEY');
+        $tokenId    = base64_encode(random_bytes(16));
+//        $issuedAt   = new DateTimeImmutable();
+//        $expire     = $issuedAt->modify('+6 minutes')->getTimestamp();
+        $serverName = "your.server.name";
+//        dd($user);
+        $userID   = $user['id'];
 
+        // Create the token as an array
+        $data = [
+//            'iat'  => $issuedAt->getTimestamp(),
+            'jti'  => $tokenId,
+            'iss'  => $serverName,
+//            'nbf'  => $issuedAt->getTimestamp(),
+            'exp'  => 1685413406,
+            'data' => [
+                'userID' => $userID,
+                'name' => $user[User::_FULLNAME] ,
+                'email' => $user[User::_EMAIL],
+
+            ]
+        ];
+
+        // Encode the array to a JWT string.
+        $token = JWT::encode(
+            $data,
+            $secretKey,
+            'HS512'
+        );
+        return $token;
+    }
     function login(Request $request)
     {
 
@@ -27,52 +59,19 @@ class AuthController extends Controller
             'email' => ['required'],
             'password' => ['required']
         ]);
-//        $email = $request->input('email');
-//        $password = $request->input('password');
-
-        try {
-            $credentials = $request->only(['email', 'password']);
-            if (!$token = Auth::attempt($credentials)) {
-                return response()->json(['error' => 'Unauthorized'], 401);
-            }
-
-        } catch (\Exception $e) {
-            $this->message = $e->getMessage();
-            goto next;
-        }
-//        try {
-//            // attempt to verify the credentials and create a token for the user
-//            //$token = JWTAuth::getToken();
-//            $token = JWTAuth::getToken();
-//            dd($token);
-//
-//            $apy = JWTAuth::getPayload($token)->toArray();
-//
-//        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-//
-//            return response()->json(['token_expired'], 500);
-//
-//        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-//
-//            return response()->json(['token_invalid'], 500);
-//
-//        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-//
-//            return response()->json(['token_absent' => $e->getMessage()], 500);
-//
-//        }
+        $check = $this->userRepository->findOneField('email', $request->input('email'));
+        $token = $this->GenerateToken($check[0]);
 
         $data = [
-                    'access_token' => $token,
-//            'decode' => $apy
-//            'name' => $user[0][User::_FULLNAME],
-//            'email' => $user[0][User::_EMAIL],
-//            'user_id' => $user[0][User::_ID],
+            'access_token' => $token,
+
         ];
         $this->message = 'login success';
         $this->status = 'success';
         next:
         return $this->responseData($data ?? []);
+
+
 
     }
 
@@ -113,14 +112,6 @@ class AuthController extends Controller
         $this->message = 'Register success';
         next:
         $token = $this->respondWithToken($token);
-
-//
-//                $dataResponse = [
-//                    'access_token' => $token,
-//                    'name' => $fullName,
-//                    'email' => $email,
-//                    'user_id' => ,
-//                ];
 
 
         return $this->responseData();
