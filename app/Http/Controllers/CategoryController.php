@@ -20,13 +20,22 @@ class CategoryController extends Controller
 
     public function getAllCategories()
     {
-        return $this->categoryRepo->getAll();
+        $this->status = 'success';
+        $this->message = 'get All Categories';
+        $categories = $this->categoryRepo->getAll();
+        return $this->responseData($categories);
 
     }
 
     public function createCategory(Request $request)
     {
-        //$this->validate($request, ['name' => 'required', 'parent_id' => 'required', 'created_by' => 'required', 'updated_by' => 'required']);
+      $request->validate(
+          [
+              'name' => ['required', 'min:3'],
+              'parent_id' => ['required'],
+              'description' => ['required']
+          ]
+      );
         $name = $request->input('name');
         $parentId = $request->input('parent_id', 0);
         $description = $request->input('description', 0);
@@ -52,8 +61,13 @@ class CategoryController extends Controller
 
     public function updateCategory(Request $request)
     {
-        //dd($request->input());
-        $id = $request->input('id');
+        $request->validate(
+            [
+                'name' => ['required', 'min:3'],
+                'parent_id' => ['required'],
+                'description' => ['required']
+            ]
+        );        $id = $request->input('id');
         $name = $request->input('name');
         $parentId = $request->input('parent_id', 0);
         $description = $request->input('description', 0);

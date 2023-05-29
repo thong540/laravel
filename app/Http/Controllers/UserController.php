@@ -6,7 +6,7 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Validation\Rules\Password;
 class UserController extends Controller
 {
     private $userRepo;
@@ -16,10 +16,22 @@ class UserController extends Controller
     }
     function getAllusers()
     {
-        return $this->userRepo->getAll();
+        $this->status = 'success';
+        $this->message = 'get All Users';
+        $users =$this->userRepo->getAll();
+        return $this->responseData($users);
     }
     function createUser(Request $request)
     {
+        $request->validate([
+            'email' => ['required|email|ends_with:@gmail.com' ],
+            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
+            'fullName' => ['required','min:3','max:20'],
+            'address' => ['required','min:3','max:20'],
+            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+
+
+        ]);
         $email = $request->input('email');
         $password = $request->input('password');
         $fullName = $request->input('fullName');
@@ -48,6 +60,15 @@ class UserController extends Controller
     }
     function updateUser(Request $request)
     {
+        $request->validate([
+            'email' => ['required|email|ends_with:@gmail.com' ],
+            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
+            'fullName' => ['required','min:3','max:20'],
+            'address' => ['required','min:3','max:20'],
+            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+
+
+        ]);
         $id = $request->input('id');
         $email = $request->input('email');
         $password = $request->input('password');

@@ -18,11 +18,23 @@ class ProductController extends Controller
 
     function getAllProducts()
     {
-        return $this->productRepo->getAll();
+        $this->status = 'success';
+        $this->message = 'get All Products';
+        $products =$this->productRepo->getAll();
+        return $this->responseData($products);
     }
 
     function createProduct(Request $request)
     {
+        $request->validate(
+            [
+                'name' => ['required','min:3','max:20'],
+                'category_id' =>['required|integer'],
+                'image' => 'required',
+                'description' => ['required','min:5'],
+                'price' => ['required']
+            ]
+        );
         $name = $request->input('name');
         $category_id = $request->input('category_id');
         $image = $request->input('image');
@@ -50,6 +62,15 @@ class ProductController extends Controller
 
     function updateProduct(Request $request)
     {
+        $request->validate(
+            [
+                'name' => ['required','min:3','max:20'],
+                'category_id' =>['required|integer'],
+                'image' => 'required',
+                'description' => ['required','min:5'],
+                'price' => ['required']
+            ]
+        );
         $id = $request->input('id');
         $name = $request->input('name');
         $category_id = $request->input('category_id');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Repositories\CustomerRepository;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
 
 class CustomerController extends Controller
 {
@@ -17,14 +18,26 @@ class CustomerController extends Controller
 
     function getAllCustomers()
     {
-        return $this->customerRepo->getAll();
+
+        $this->status = 'success';
+        $this->message = 'get All Customers';
+        $customers =$this->customerRepo->getAll();;
+        return $this->responseData($customers);
+
     }
 
     function createCustomer(Request $request)
     {
+        $request->validate([
+            'email' => ['required|email|ends_with:@gmail.com' ],
+            'fullName' => ['required','min:3','max:20'],
+            'address' => ['required','min:3','max:20'],
+            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+
+
+        ]);
         $email = $request->input('email');
 //        $description = $request->input('description', 0);
-        $password = $request->input('password');
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
@@ -51,6 +64,14 @@ class CustomerController extends Controller
 
     function updateCustomer(Request $request)
     {
+        $request->validate([
+            'email' => ['required|email|ends_with:@gmail.com' ],
+            'fullName' => ['required','min:3','max:20'],
+            'address' => ['required','min:3','max:20'],
+            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+
+
+        ]);
         $id = $request->input('id');
         $email = $request->input('email');
         $fullName = $request->input('fullName');

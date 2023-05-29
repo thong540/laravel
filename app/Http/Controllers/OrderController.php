@@ -16,10 +16,21 @@ class OrderController extends Controller
     }
     function getAllOrders()
     {
-        return $this->orderRepo->getAll();
+        $this->status = 'success';
+        $this->message = 'get All Orders';
+        $order =$this->orderRepo->getAll();;;
+        return $this->responseData($order);
     }
     function createOrder(Request $request)
     {
+        $request->validate(
+            [
+                'name' => ['required', 'min:3'],
+                'user_id' => 'required',
+                'customer_id' => 'required',
+                'status' => 'required'
+            ]
+        );
         $name = $request->input('name');
         $user_id = $request->input('user_id');
         $customer_id = $request->input('customer_id');
@@ -46,6 +57,14 @@ class OrderController extends Controller
     }
     function updateOrder(Request $request)
     {
+        $request->validate(
+            [
+                'name' => ['required', 'min:3'],
+                'user_id' => 'required',
+                'customer_id' => 'required',
+                'status' => 'required'
+            ]
+        );
         $id = $request->input('id');
         $name = $request->input('name');
         $user_id = $request->input('user_id');
