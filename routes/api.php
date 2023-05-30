@@ -25,10 +25,12 @@ Route::middleware(['checkAge'])->group(function () {
     //
     Route::get('/test', 'App\Http\Controllers\TestController@functionTest');
 
+
 });
 
 Route::middleware(['checkToken'])->group(function () {
     Route::post('/create-order', 'App\Http\Controllers\OrderController@createOrder');
+    Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
 });
 Route::post('/create-category', 'App\Http\Controllers\CategoryController@createCategory');
 Route::post('/update-category', 'App\Http\Controllers\CategoryController@updateCategory');
@@ -52,12 +54,12 @@ Route::delete('/delete-user', 'App\Http\Controllers\UserController@deleteUser');
 
 
 Route::post('/update-order', 'App\Http\Controllers\OrderController@updateOrder');
-Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
+
 Route::delete('/delete-order', 'App\Http\Controllers\OrderController@deleteOrder');
 
 
 Route::post('/login', '\App\Http\Controllers\Auth1Controller@login');
-Route::post('/register', '\App\Http\Controllers\AuthController@register');
+Route::post('/register', '\App\Http\Controllers\Auth1Controller@register');
 
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
 //Route::apiResource('posts',PostController::class);

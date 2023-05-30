@@ -22,6 +22,9 @@ class User extends Authenticatable implements JWTSubject
     const _PHONENUMBER = 'phoneNumber';
     const _CREATED_AT = 'created_at';
     const _UPDATED_AT = 'updated_at';
+
+    const _MANAGER = 1;
+    const _STAFF = 2;
     protected $fillable = [
         self::_ID,
         self::_EMAIL,

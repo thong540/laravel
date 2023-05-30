@@ -23,20 +23,21 @@ class UserController extends Controller
     }
     function createUser(Request $request)
     {
-        $request->validate([
-            'email' => ['required|email|ends_with:@gmail.com' ],
-            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
-            'fullName' => ['required','min:3','max:20'],
-            'address' => ['required','min:3','max:20'],
-            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
-
-
-        ]);
+//        $request->validate([
+////            'email' => ['required|email|ends_with:@gmail.com' ],
+//            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
+//            'fullName' => ['required','min:3','max:20'],
+//            'address' => ['required','min:3','max:20'],
+//            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+//
+//
+//        ]);
         $email = $request->input('email');
         $password = $request->input('password');
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
+
         $dataInsert = [
             User::_EMAIL => $email,
             User::_PASSWORD => Hash::make($password),

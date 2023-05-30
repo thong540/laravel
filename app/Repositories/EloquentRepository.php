@@ -94,6 +94,7 @@ abstract class EloquentRepository implements RepositoryInterface
 
     public function insertGetId(array $attributes)
     {
+
         return $this->_model->insertGetId($attributes);
     }
 

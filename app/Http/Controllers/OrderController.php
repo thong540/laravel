@@ -13,28 +13,25 @@ class OrderController extends Controller
 {
     //
     private $orderRepo;
+
     function __construct(OrderRepository $orderRepo)
     {
         $this->orderRepo = $orderRepo;
     }
+
     function getAllOrders()
     {
         $this->status = 'success';
         $this->message = 'get All Orders';
-        $order =$this->orderRepo->getAll();;;
+        $order = $this->orderRepo->getAll();;;
         return $this->responseData($order);
     }
+
     function createOrder(Request $request)
     {
-        $decoded = JWT::decode('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJqdGkiOiIwQVNFTk9qVVNmbGY3SC9SUHdVaW9RPT0iLCJpc3MiOiJ5b3VyLnNlcnZlci5uYW1lIiwiZXhwIjoxNjg1NDEzNDA2LCJkYXRhIjp7InVzZXJJRCI6MywibmFtZSI6InF3ZSIsImVtYWlsIjoidGVzdCJ9fQ.9W8egyJkIxoExtnqghAWIpBgxZkugbMRrYLWXc-oCz2eKuGVIZCKxOJDuZMN0iUFebQnotrb-P06-lN1r8zWjQ', new Key(env('JWT_KEY'), 'HS512'));
-        //$apy = Auth::user();
-       // $request->attributes = $decoded['data'];
-        //dd($decoded);
-        $decoded_array = (array) $decoded;
-       //dd($decoded_array['data']); //dd($apy->toArray());
         $request->validate(
             [
-                'name' => ['required', 'min:3'],
+                'name' => 'required',
                 'user_id' => 'required',
                 'customer_id' => 'required',
                 'status' => 'required'
@@ -47,11 +44,11 @@ class OrderController extends Controller
 
         $dataInsert = [
             Order::_NAME => $name,
-          Order::_USER_ID => $user_id,
-          Order::_CUSTOMER_ID => $customer_id,
-          Order::_STATUS => $status,
-          Order::_CREATED_AT => time(),
-          Order::_UPDATED_AT => time()
+            Order::_USER_ID => $user_id,
+            Order::_CUSTOMER_ID => $customer_id,
+            Order::_STATUS => $status,
+            Order::_CREATED_AT => time(),
+            Order::_UPDATED_AT => time()
         ];
         $check = $this->orderRepo->insert($dataInsert);
         if (!$check) {
@@ -64,6 +61,7 @@ class OrderController extends Controller
         return $this->responseData($dataInsert);
 
     }
+
     function updateOrder(Request $request)
     {
         $request->validate(
@@ -98,6 +96,7 @@ class OrderController extends Controller
         return $this->responseData($dataUpdate);
 
     }
+
     function deleteOrder(Request $request)
     {
         $id = $request->input('id');

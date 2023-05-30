@@ -16,6 +16,8 @@ class CreateUserRoleTable extends Migration
         Schema::create('user_role', function (Blueprint $table) {
             $table->integer('user_id');
             $table->integer('role_id');
+            $table->integer('created_at');
+            $table->integer('updated_at');
 //            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 //            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
         });
