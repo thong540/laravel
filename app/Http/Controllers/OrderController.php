@@ -18,7 +18,10 @@ class OrderController extends Controller
     {
         $this->orderRepo = $orderRepo;
     }
-
+    private function checkPermissionOrder($user, $roleExecute = [])
+    {
+        return in_array($user, $roleExecute);
+    }
     function getAllOrders()
     {
         $this->status = 'success';
@@ -29,14 +32,19 @@ class OrderController extends Controller
 
     function createOrder(Request $request)
     {
-        $request->validate(
-            [
-                'name' => 'required',
-                'user_id' => 'required',
-                'customer_id' => 'required',
-                'status' => 'required'
-            ]
-        );
+//        $request->validate(
+//            [
+//                'name' => 'required',
+//                'user_id' => 'required',
+//                'customer_id' => 'required',
+//                'status' => 'required'
+//            ]
+//        );
+        $userInfor = $request->attributes->get('user')->data;
+        if(!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message='user no permission';
+            goto next;
+        }
         $name = $request->input('name');
         $user_id = $request->input('user_id');
         $customer_id = $request->input('customer_id');
@@ -64,14 +72,20 @@ class OrderController extends Controller
 
     function updateOrder(Request $request)
     {
-        $request->validate(
-            [
-                'name' => ['required', 'min:3'],
-                'user_id' => 'required',
-                'customer_id' => 'required',
-                'status' => 'required'
-            ]
-        );
+
+//        $request->validate(
+//            [
+//                'name' => ['required', 'min:3'],
+//                'user_id' => 'required',
+//                'customer_id' => 'required',
+//                'status' => 'required'
+//            ]
+//        );
+        $userInfor = $request->attributes->get('user')->data;
+        if(!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message='user no permission';
+            goto next;
+        }
         $id = $request->input('id');
         $name = $request->input('name');
         $user_id = $request->input('user_id');
@@ -99,6 +113,11 @@ class OrderController extends Controller
 
     function deleteOrder(Request $request)
     {
+        $userInfor = $request->attributes->get('user')->data;
+        if(!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message='user no permission';
+            goto next;
+        }
         $id = $request->input('id');
         $check = $this->orderRepo->delete($id);
         if (!$check) {
@@ -110,4 +129,10 @@ class OrderController extends Controller
         next:
         return $this->responseData();
     }
+    public function getDetailOrder()
+    {
+
+    }
+
 }
+

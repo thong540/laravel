@@ -17,6 +17,10 @@ class Category extends Model
     const _DESCRIPTION = 'description';
     const _CREATED_AT = 'created_at';
     const _UPDATED_AT = 'updated_at';
+    const ADMIN = 1;
+    const MANAGER = 2;
+    const STAFF = 3;
+    const USER  = 4;
     protected $fillable = [
         self::_ID,
         self::_NAME,

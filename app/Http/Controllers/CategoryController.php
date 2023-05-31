@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\User;
 use App\Repositories\CategoryRepository;
 use Illuminate\Http\Request;
 
@@ -18,6 +19,12 @@ class CategoryController extends Controller
         $this->categoryRepo = $categoryRepo;
     }
 
+    private function checkPermissionCategory($user, $roleExecute)
+    {
+        //dd($user, $roleExecute);
+        return in_array($user, $roleExecute);
+    }
+
     public function getAllCategories()
     {
         $this->status = 'success';
@@ -29,16 +36,23 @@ class CategoryController extends Controller
 
     public function createCategory(Request $request)
     {
-      $request->validate(
-          [
-              'name' => ['required', 'min:3'],
-              'parent_id' => ['required'],
-              'description' => ['required']
-          ]
-      );
+//      $request->validate(
+//          [
+//              'name' => ['required'],
+//              'parent_id' => ['required'],
+//              'description' => ['required']
+//          ]
+//      );
+        $userInfor = (array)$request->attributes->get('user')->data;
+        if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
+            $this->message = 'user no permission';
+            goto next;
+        };
+
         $name = $request->input('name');
         $parentId = $request->input('parent_id', 0);
         $description = $request->input('description', 0);
+
 
         $dataInsert = [
             Category::_NAME => $name,
@@ -61,13 +75,20 @@ class CategoryController extends Controller
 
     public function updateCategory(Request $request)
     {
-        $request->validate(
-            [
-                'name' => ['required', 'min:3'],
-                'parent_id' => ['required'],
-                'description' => ['required']
-            ]
-        );        $id = $request->input('id');
+
+//        $request->validate(
+//            [
+//                'name' => ['required', 'min:3'],
+//                'parent_id' => ['required'],
+//                'description' => ['required']
+//            ]
+//        );
+        $userInfor = (array)$request->attributes->get('user')->data;
+        if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
+            $this->message = 'user no permission';
+            goto next;
+        };
+        $id = $request->input('id');
         $name = $request->input('name');
         $parentId = $request->input('parent_id', 0);
         $description = $request->input('description', 0);
@@ -94,6 +115,11 @@ class CategoryController extends Controller
     {
 
         $id = $request->input('id');
+        $userInfor = (array)$request->attributes->get('user')->data;
+        if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
+            $this->message = 'user no permission';
+            goto next;
+        };
 
         $check = $this->customerRepo->delete($id);
         if (!$check) {

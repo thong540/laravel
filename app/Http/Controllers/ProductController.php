@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\User;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,11 @@ class ProductController extends Controller
         $this->productRepo = $productRepo;
     }
 
+    private function checkPermissionCustomer($user, $roleExecute = [])
+    {
+
+        return in_array($user, $roleExecute);
+    }
     function getAllProducts()
     {
         $this->status = 'success';
@@ -26,15 +32,21 @@ class ProductController extends Controller
 
     function createProduct(Request $request)
     {
-        $request->validate(
-            [
-                'name' => ['required','min:3','max:20'],
-                'category_id' =>['required|integer'],
-                'image' => 'required',
-                'description' => ['required','min:5'],
-                'price' => ['required']
-            ]
-        );
+//        $request->validate(
+//            [
+//                'name' => ['required','min:3','max:20'],
+//                'category_id' =>['required|integer'],
+//                'image' => 'required',
+//                'description' => ['required','min:5'],
+//                'price' => ['required']
+//            ]
+//        );
+        $userInfor = $request->attributes->get('user')->data;
+
+        if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
+            $this->message = 'User no permission';
+            goto next;
+        }
         $name = $request->input('name');
         $category_id = $request->input('category_id');
         $image = $request->input('image');
@@ -62,15 +74,21 @@ class ProductController extends Controller
 
     function updateProduct(Request $request)
     {
-        $request->validate(
-            [
-                'name' => ['required','min:3','max:20'],
-                'category_id' =>['required|integer'],
-                'image' => 'required',
-                'description' => ['required','min:5'],
-                'price' => ['required']
-            ]
-        );
+
+//        $request->validate(
+//            [
+//                'name' => ['required','min:3','max:20'],
+//                'category_id' =>['required|integer'],
+//                'image' => 'required',
+//                'description' => ['required','min:5'],
+//                'price' => ['required']
+//            ]
+//        );
+        $userInfor = $request->attributes->get('user')->data;
+        if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
+            $this->message = 'User no permission';
+            goto next;
+        }
         $id = $request->input('id');
         $name = $request->input('name');
         $category_id = $request->input('category_id');
@@ -98,6 +116,11 @@ class ProductController extends Controller
 
     function deleteProduct(Request $request)
     {
+        $userInfor = $request->attributes->get('user')->data;
+        if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
+            $this->message = 'User no permission';
+            goto next;
+        }
         $id = $request->input('id');
         $check = $this->productRepo->delete($id);
         if (!$check) {

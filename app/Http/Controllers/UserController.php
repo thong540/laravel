@@ -14,6 +14,22 @@ class UserController extends Controller
     {
         $this->userRepo = $userRepo;
     }
+    private function checkPermissionUser($user, $roleExecutes)
+    {
+        if(!is_array($user)) {
+            return in_array($user, $roleExecutes);
+        }
+        foreach ($roleExecutes as $roleExecute) {
+            //dd($user);
+           if ($user[0]->role_id == $roleExecute) {
+              // dd($user['role_id'], $roleExecute);
+               return true;
+           }
+       }
+
+        return false;
+    }
+
     function getAllusers()
     {
         $this->status = 'success';
@@ -23,6 +39,11 @@ class UserController extends Controller
     }
     function createUser(Request $request)
     {
+        $checkPermission = $this->checkPermissionUser($request->attributes->get('user'), [User::ADMIN,User::MANAGER, User::STAFF]);
+
+        if (!$checkPermission) {
+            goto next;
+        }
 //        $request->validate([
 ////            'email' => ['required|email|ends_with:@gmail.com' ],
 //            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
@@ -61,21 +82,38 @@ class UserController extends Controller
     }
     function updateUser(Request $request)
     {
-        $request->validate([
-            'email' => ['required|email|ends_with:@gmail.com' ],
-            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
-            'fullName' => ['required','min:3','max:20'],
-            'address' => ['required','min:3','max:20'],
-            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+//        $request->validate([
+//            'email' => ['required|email|ends_with:@gmail.com' ],
+//            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
+//            'fullName' => ['required','min:3','max:20'],
+//            'address' => ['required','min:3','max:20'],
+//            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+//
+//
+//        ]);
+        $userInfo = (array)$request->attributes->get('user')->data;
+        $checkPermission = $this->checkPermissionUser($userInfo['role'], [User::ADMIN,User::MANAGER, User::STAFF, User::USER]);
 
+        if (!$checkPermission) {
+            $this->message = 'User is not permission';
+            goto next;
+        }
 
-        ]);
         $id = $request->input('id');
         $email = $request->input('email');
         $password = $request->input('password');
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
+
+        $userId = $userInfo['userId'];
+        $userRole = $userInfo['role'][0]->role_id;
+
+        if ($userId != $id && $userRole == User::USER) {
+            $this->message = 'User is not permission';
+            goto next;
+        }
+
         $dataUpdate = [
             User::_EMAIL => $email,
             User::_PASSWORD => Hash::make($password),
@@ -97,6 +135,14 @@ class UserController extends Controller
     }
     function deleteUser(Request $request)
     {
+
+        $userInfo = (array)$request->attributes->get('user')->data;
+       // dd($userInfo);
+        $checkPermission = $this->checkPermissionUser($userInfo['role'], [User::ADMIN,User::MANAGER, User::STAFF]);
+        if (!$checkPermission) {
+            $this->message = 'user is not permisson';
+            goto next;
+        }
 
         $id = $request->input('id');
 

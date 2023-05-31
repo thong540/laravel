@@ -23,30 +23,36 @@ class Auth1Controller extends Controller
 
     }
 
-    function GenerateToken($user)
+    function generateToken($user, $roleId = [])
     {
         $secretKey = env('JWT_KEY');
-        $tokenId = base64_encode(random_bytes(16));
+//        $tokenId = base64_encode(random_bytes(16));
 //        $issuedAt   = new DateTimeImmutable();
 //        $expire     = $issuedAt->modify('+6 minutes')->getTimestamp();
-        $serverName = "server.name";
+ //       $serverName = "server.name";
 //        dd($user);
-        $userID = $user['id'];
-
+//        $userID = $user['id'];
+        $dataInsert = [];
         // Create the token as an array
-        $data = [
-//            'iat'  => $issuedAt->getTimestamp(),
-            'jti' => $tokenId,
-            'iss' => $serverName,
-//            'nbf'  => $issuedAt->getTimestamp(),
-            'exp' => 1688123760,
-            'data' => [
-                'userID' => $userID,
+        if (!isset($roleId)) {
+            $dataInsert = [
+                'userId' => $user[User::_ID],
                 'name' => $user[User::_FULLNAME],
                 'email' => $user[User::_EMAIL],
-                'role' => $user['role'],
 
-            ]
+            ];
+        } else {
+            $dataInsert = [
+                'userId' => $user[User::_ID],
+                'name' => $user[User::_FULLNAME],
+                'email' => $user[User::_EMAIL],
+                'role' => $roleId,
+
+            ];
+        }
+        $data = [
+            'exp' => time() + 24*60*60,
+            'data' => $dataInsert,
         ];
 
         // Encode the array to a JWT string.
@@ -65,20 +71,24 @@ class Auth1Controller extends Controller
             'email' => ['required'],
             'password' => ['required']
         ]);
-        $check = $this->userRepository->findOneField('email', $request->input('email'));
-        $getRole = $this->userRoleRepo->findRole();
-        $token = $this->GenerateToken($check[0]);
+        $email = $request->input('email');
+        $checkUser = $this->userRepository->getUserByEmail($email);
+        if (!$checkUser) {
+            $this->message = 'email is incorrect';
+            goto next;
+        }
+
+        $roleUser = $this->userRoleRepo->getRoleByUserId($checkUser['id']);
+
+        $token = $this->generateToken($checkUser, $roleUser);
 
         $data = [
             'access_token' => $token,
-
         ];
         $this->message = 'login success';
         $this->status = 'success';
         next:
         return $this->responseData($data ?? []);
-
-
     }
 
     function register(Request $request)
@@ -131,10 +141,18 @@ class Auth1Controller extends Controller
             User::_ID => $getUserId,
             User::_EMAIL => $email,
             User::_FULLNAME => $fullName,
-            'role' => $role,
+
 
         ];
-        $token = $this->GenerateToken($dataEncode);
+
+        $this->userRoleRepo->insert(
+            [
+                'user_id' => $getUserId,
+                'role_id' => $role,
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]);
+        $token = $this->generateToken($dataEncode, $role);
         $this->status = 'success';
         $this->message = 'Register success';
 

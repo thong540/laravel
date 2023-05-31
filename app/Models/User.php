@@ -23,8 +23,10 @@ class User extends Authenticatable implements JWTSubject
     const _CREATED_AT = 'created_at';
     const _UPDATED_AT = 'updated_at';
 
-    const _MANAGER = 1;
-    const _STAFF = 2;
+    const ADMIN = 1;
+    const MANAGER = 2;
+    const STAFF = 3;
+    const USER  = 4;
     protected $fillable = [
         self::_ID,
         self::_EMAIL,

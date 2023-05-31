@@ -44,7 +44,9 @@ class CheckToken
         }
         try {
             $decoded = JWT::decode($token, new Key(env('JWT_KEY'), 'HS512'));
+
             $request->attributes->add(['user' => $decoded]);
+            //dd($request->attributes);
             return $next($request);
         } catch (\Exception $e) {
             return response()->json('Permission denied', 401);
