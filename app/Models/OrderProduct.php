@@ -11,7 +11,7 @@ class OrderProduct extends Model
     public $timestamps = false;
     const TABLE = 'order_products';
     const _ID = 'id';
-    const _ID_ORDER_ID = 'order_id';
+    const _ORDER_ID = 'order_id';
     const _PRODUCT_ID = 'product_id';
     const _QUANTITY = 'quantity';
     const _PRICE = 'price';
@@ -19,7 +19,7 @@ class OrderProduct extends Model
     const _UPDATED_AT = 'updated_at';
     protected $fillable = [
         self::_ID,
-        self::_ID_ORDER_ID,
+        self::_ORDER_ID,
         self::_PRODUCT_ID,
         self::_QUANTITY,
         self::_PRICE,

@@ -1,9 +1,9 @@
 <?php
 
-use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TestController;
-use App\Http\Controllers\Api\PostController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -15,18 +15,6 @@ use App\Http\Controllers\Api\PostController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-
-Route::middleware(['checkAge'])->group(function () {
-    //
-    Route::get('/test', 'App\Http\Controllers\TestController@functionTest');
-
-
-});
 
 Route::middleware(['checkToken'])->group(function () {
 
@@ -53,14 +41,20 @@ Route::middleware(['checkToken'])->group(function () {
     Route::delete('/delete-order', 'App\Http\Controllers\OrderController@deleteOrder');
 
 
+
 });
 
 Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
+Route::post('/get-detail-order', '\App\Http\Controllers\OrderController@getDetailOrder');
+Route::post('/update-status-order', 'App\Http\Controllers\OrderController@updateStatusOrder');
+Route::post('/get-status-order', '\App\Http\Controllers\OrderController@getStatusOrder');
+Route::post('/find-order-by-field', '\App\Http\Controllers\OrderController@findOrderByOneField');
+
 Route::get('/category', 'App\Http\Controllers\CategoryController@getAllCategories');
 Route::get('/product', '\App\Http\Controllers\ProductController@getAllProducts');
 
-Route::post('/login', '\App\Http\Controllers\Auth1Controller@login');
-Route::post('/register', '\App\Http\Controllers\Auth1Controller@register');
+Route::post('/login', '\App\Http\Controllers\AuthController@login');
+Route::post('/register', '\App\Http\Controllers\AuthController@register');
 
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
 //Route::apiResource('posts',PostController::class);

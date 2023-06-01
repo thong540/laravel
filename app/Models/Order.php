@@ -22,6 +22,11 @@ class Order extends Model
     const MANAGER = 2;
     const STAFF = 3;
     const USER  = 4;
+    const NEW_ORDER = 1;
+    const SPENDING_ORDER = 2;
+    const OK_ORDER = 3;
+    const DELIVERY_TO_BUYER = 4;
+    const CANCEL = 5;
     protected $fillable = [
         self::_ID,
         self::_NAME,

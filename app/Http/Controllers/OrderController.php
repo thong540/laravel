@@ -129,9 +129,40 @@ class OrderController extends Controller
         next:
         return $this->responseData();
     }
-    public function getDetailOrder()
+    public function getDetailOrder(Request $request)
     {
 
+
+        return $this->orderRepo->getDetailOrderByName($request->input('nameOrder'));
+    }
+    public function updateStatusOrder(Request $request)
+    {
+
+        $currentStatus = $request->input('status');
+        $id = $request->input('id');
+        return $this->orderRepo->updateOneFieldById(Order::_STATUS, $id, $currentStatus);
+
+    }
+    public function getStatusOrder(Request $request)
+    {
+        $id = $request->input('id');
+        $result = $this->orderRepo->getStatusOrder($id);
+        if(!$result) {
+            $this->message = 'not found order';
+            $this->status = 'failure';
+
+        } else{
+            $this->message = 'get status';
+            $this->status = 'success';
+        }
+
+        return $this->responseData(!$result ? [] :  ['status' => $result[0]['status']]);
+
+
+    }
+    public function findOrderByOneField(Request $request)
+    {
+        return $this->orderRepo->findOrderByOneField($request->input('field'), $request->input('value'));
     }
 
 }

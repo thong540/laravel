@@ -11,5 +11,9 @@ class OrderProductRepository extends EloquentRepository
         // TODO: Implement getModel() method.
         return OrderProduct::class;
     }
+    public function getInformationProductByOrderId($orderId)
+    {
+
+    }
 
 }
