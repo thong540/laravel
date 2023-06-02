@@ -250,13 +250,22 @@ class OrderController extends Controller
         foreach ($dataCustomers as $item) {
             array_push($orderIds, $item['orderId']);
         }
-        $dataRespose = [];
-       // dd($orderIds);
-        foreach($orderIds as $key => $orderId ) {
 
-           array_push($dataRespose, $this->orderRepo->getDetailOrderById($orderId)->toArray());
+        if (!$orderIds) {
+            $this->message = 'No Orders';
+            $this->status = 'failure';
+            goto next;
+        }
+        $dataRespose = [];
+        foreach($orderIds as $key => $orderId ) {
+           $order = $this->orderRepo->getDetailOrderById($orderId)->toArray();
+
+           if (!empty($order)) {
+               $dataRespose[] = $order;
+           }
         };
-        //dd($dataRespose);
+
+
         if (!$dataRespose) {
             $this->message = 'found not orders';
             $this->status = 'failure';
