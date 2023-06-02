@@ -29,8 +29,9 @@ class OrderRepository extends EloquentRepository
 //        }
 //        return $query->get();
 //    }
-    public function getDetailOrderByName($nameOrder)
+    public function getDetailOrderById($orderId)
     {
+
         $query = $this->_model
             ->select(
                 Customer::TABLE . '.' . Customer::_EMAIL,
@@ -50,24 +51,25 @@ class OrderRepository extends EloquentRepository
                 Order::TABLE . '.' . Order::_CREATED_AT,
                 Order::TABLE . '.' . Order::_UPDATED_AT)
             ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID)
-            ->rightjoin(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
+            ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
             ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
             ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
-        //dd($query->get()->toArray());
-        if (!isset($nameOrder)) {
-            return $query->get();
+       // dd($query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get()->toArray());
+        if (!isset($orderId)) {
+            return false;
         }
-        return $query->where(Order::TABLE . '.' . Order::_NAME, $nameOrder)->get();
+        return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get();
     }
+
     public function updateOneFieldById($field, $id, $currentStatus)
     {
 
-       $result = $this->_model->where('id', $id);
-        if($currentStatus == Order::CANCEL) {
+        $result = $this->_model->where('id', $id);
+        if ($currentStatus == Order::CANCEL) {
             $result->delete($id);
             return true;
         }
-        if($result) {
+        if ($result) {
             $result->update([$field => $currentStatus])->get();
 
             return true;
@@ -76,14 +78,16 @@ class OrderRepository extends EloquentRepository
 
 
     }
+
     public function getStatusOrder($OrderId)
     {
-        if(!isset($OrderId)) return false;
         $result = $this->_model->where('id', $OrderId)->get()->toArray();
 
         return $result;
     }
-    public function findOrderByOneField($field, $value) {
+
+    public function findOrderByOneField($field, $value)
+    {
 
         $query = $this->_model
             ->select(
@@ -104,16 +108,53 @@ class OrderRepository extends EloquentRepository
                 Order::TABLE . '.' . Order::_CREATED_AT,
                 Order::TABLE . '.' . Order::_UPDATED_AT)
             ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID)
-            ->rightjoin(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
+            ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
             ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
             ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
 
         if (isset($field) && isset($value)) {
-            $query = $query->where(Customer::TABLE . '.' . $field, 'like','%'. $value .'%');
+            $query = $query->where(Customer::TABLE . '.' . $field, 'like', '%' . $value . '%');
         }
         return $query->get();
 
 
     }
 
+    public function findOrderByInforCustomer($inforCustomer)
+    {
+
+        $query = $this->_model
+            ->select(
+                Customer::TABLE . '.' . Customer::_ID . ' as customerId',
+                Customer::TABLE . '.' . Customer::_EMAIL,
+                Customer::TABLE . '.' . Customer::_FULLNAME,
+                Customer::TABLE . '.' . Customer::_ADDRESS,
+                Customer::TABLE . '.' . Customer::_PHONENUMBER,
+                Order::TABLE . '.' . Order::_ID . ' as orderId',
+            )
+            ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID);
+        if ($inforCustomer['id']) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_ID, $inforCustomer['id']);
+        }
+
+        if (isset($inforCustomer['email'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_EMAIL, $inforCustomer['email']);
+        }
+
+        if (isset($inforCustomer['fullName'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_FULLNAME, $inforCustomer['fullName']);
+        }
+
+        if (isset($inforCustomer['address'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_ADDRESS, $inforCustomer['address']);
+        }
+        if (isset($inforCustomer['phoneNumber'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_PHONENUMBER, $inforCustomer['phoneNumber']);
+        }
+
+//        dd($query->get()->toArray());
+        return $query->get()->toArray();
+
+
+    }
 }

@@ -49,12 +49,13 @@ Route::post('/get-detail-order', '\App\Http\Controllers\OrderController@getDetai
 Route::post('/update-status-order', 'App\Http\Controllers\OrderController@updateStatusOrder');
 Route::post('/get-status-order', '\App\Http\Controllers\OrderController@getStatusOrder');
 Route::post('/find-order-by-field', '\App\Http\Controllers\OrderController@findOrderByOneField');
+Route::post('/find-order-by-customer', '\App\Http\Controllers\OrderController@findOrderByInforCustomer');
 
 Route::get('/category', 'App\Http\Controllers\CategoryController@getAllCategories');
 Route::get('/product', '\App\Http\Controllers\ProductController@getAllProducts');
 
 Route::post('/login', '\App\Http\Controllers\AuthController@login');
 Route::post('/register', '\App\Http\Controllers\AuthController@register');
-
+Route::post('/test', '\App\Http\Controllers\Api\TestController@test');
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
 //Route::apiResource('posts',PostController::class);

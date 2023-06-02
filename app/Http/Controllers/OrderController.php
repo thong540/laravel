@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Order;
 use App\Repositories\OrderRepository;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -18,10 +16,12 @@ class OrderController extends Controller
     {
         $this->orderRepo = $orderRepo;
     }
+
     private function checkPermissionOrder($user, $roleExecute = [])
     {
         return in_array($user, $roleExecute);
     }
+
     function getAllOrders()
     {
         $this->status = 'success';
@@ -32,17 +32,17 @@ class OrderController extends Controller
 
     function createOrder(Request $request)
     {
-//        $request->validate(
-//            [
-//                'name' => 'required',
-//                'user_id' => 'required',
-//                'customer_id' => 'required',
-//                'status' => 'required'
-//            ]
-//        );
+        $request->validate(
+            [
+                'name' => 'required',
+                'user_id' => 'required',
+                'customer_id' => 'required',
+                'status' => 'required'
+            ]
+        );
         $userInfor = $request->attributes->get('user')->data;
-        if(!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
-            $this->message='user no permission';
+        if (!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message = 'user no permission';
             goto next;
         }
         $name = $request->input('name');
@@ -73,17 +73,17 @@ class OrderController extends Controller
     function updateOrder(Request $request)
     {
 
-//        $request->validate(
-//            [
-//                'name' => ['required', 'min:3'],
-//                'user_id' => 'required',
-//                'customer_id' => 'required',
-//                'status' => 'required'
-//            ]
-//        );
+        $request->validate(
+            [
+                'name' => 'required',
+                'user_id' => 'required',
+                'customer_id' => 'required',
+                'status' => 'required'
+            ]
+        );
         $userInfor = $request->attributes->get('user')->data;
-        if(!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
-            $this->message='user no permission';
+        if (!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message = 'user no permission';
             goto next;
         }
         $id = $request->input('id');
@@ -114,8 +114,8 @@ class OrderController extends Controller
     function deleteOrder(Request $request)
     {
         $userInfor = $request->attributes->get('user')->data;
-        if(!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
-            $this->message='user no permission';
+        if (!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message = 'user no permission';
             goto next;
         }
         $id = $request->input('id');
@@ -129,41 +129,152 @@ class OrderController extends Controller
         next:
         return $this->responseData();
     }
+
     public function getDetailOrder(Request $request)
     {
 
+//        $request->validate([
+//            'order_id' => 'required'
+//        ]);
+        $orderId = $request->input('order_id');
 
-        return $this->orderRepo->getDetailOrderByName($request->input('nameOrder'));
+        if (!isset($orderId)) {
+            $this->message = 'OrderId is required';
+            $this->status = 'failure';
+            goto next;
+        }
+        $orderDetail = $this->orderRepo->getDetailOrderById($orderId);
+
+        if (!$orderDetail) {
+            $this->message = 'Not found by OrderId';
+            $this->status = 'failure';
+            goto next;
+        }
+
+        $totalPrice = 0;
+
+        foreach ($orderDetail as $product) {
+            $totalPrice += $product['price'] * $product['quantity'];
+        }
+
+        $data['information_order'] = $orderDetail;
+        $data['total_price'] = $totalPrice;
+        $this->message = 'get order';
+        $this->status = 'success';
+        // dd($data);
+        next:
+        if (!isset($data)) $data = [];
+        return $this->responseData($data);
+        // query lay thong tin don hang - order + customer + user
+        // lay danh sach sp order_product => tinh ra tong gia tien don hang
+
     }
+
     public function updateStatusOrder(Request $request)
     {
-
-        $currentStatus = $request->input('status');
+        $status = $request->input('status');
         $id = $request->input('id');
-        return $this->orderRepo->updateOneFieldById(Order::_STATUS, $id, $currentStatus);
+
+        if (!$id || !$status) {
+            $this->message = 'no update status in the order';
+            $this->status = 'failure';
+
+            goto next;
+        }
+        $dataUpdate = [Order::_STATUS => $status, Order::_UPDATED_AT => time()];
+        $statusUpdate = $this->orderRepo->update($id, $dataUpdate);
+        if (!$statusUpdate) {
+            $this->message = 'no update status in the order';
+            $this->status = 'failure';
+            goto next;
+        }
+        $this->message = 'updated status';
+        $this->status = 'success';
+        next:
+        if (!isset($dataUpdate)) {
+            $dataUpdate = [];
+        }
+//        return $this->orderRepo->updateOneFieldById(Order::_STATUS, $id, $currentStatus);
+        return $this->responseData($dataUpdate);
+
 
     }
+
     public function getStatusOrder(Request $request)
     {
         $id = $request->input('id');
+        if (!isset($OrderId)) return false;
         $result = $this->orderRepo->getStatusOrder($id);
-        if(!$result) {
+        if (!$result) {
             $this->message = 'not found order';
             $this->status = 'failure';
 
-        } else{
+        } else {
             $this->message = 'get status';
             $this->status = 'success';
         }
-
-        return $this->responseData(!$result ? [] :  ['status' => $result[0]['status']]);
+        $data = !$result ? [] : ['status' => $result[0]['status']];
+        return $this->responseData($data);
 
 
     }
+
     public function findOrderByOneField(Request $request)
     {
         return $this->orderRepo->findOrderByOneField($request->input('field'), $request->input('value'));
     }
 
+    public function findOrderByInforCustomer(Request $request)
+    {
+        $id = $request->input('id');
+        $email = $request->input('email');
+        $fullName = $request->input('fullName');
+        $phoneNumber = $request->input('phoneNumber');
+        $address = $request->input('address');
+
+        $data = [
+            Customer::_ID => $id,
+            Customer::_EMAIL => $email,
+            Customer::_FULLNAME => $fullName,
+            Customer::_PHONENUMBER => $phoneNumber,
+            Customer::_ADDRESS => $address,
+        ];
+
+        $dataCustomers = $this->orderRepo->findOrderByInforCustomer($data);
+        if (!$dataCustomers) {
+            $this->message = 'No Orders';
+            $this->status = 'failure';
+            goto next;
+        }
+        $orderIds = [];
+        foreach ($dataCustomers as $item) {
+            array_push($orderIds, $item['orderId']);
+        }
+        $dataRespose = [];
+       // dd($orderIds);
+        foreach($orderIds as $key => $orderId ) {
+
+           array_push($dataRespose, $this->orderRepo->getDetailOrderById($orderId)->toArray());
+        };
+        //dd($dataRespose);
+        if (!$dataRespose) {
+            $this->message = 'found not orders';
+            $this->status = 'failure';
+
+        } else {
+            $this->message = 'get Orders';
+            $this->status = 'success';
+
+
+        }
+
+        next:
+        if(!isset($dataRespose)) {
+            $dataRespose = [];
+        }
+        return $this->responseData($dataRespose);
+
+
+    }
 }
 

@@ -119,7 +119,8 @@ class UserController extends Controller
             User::_PASSWORD => Hash::make($password),
             User::_FULLNAME => $fullName,
             User::_ADDRESS => $address,
-            User::_PHONENUMBER => $phoneNumber
+            User::_PHONENUMBER => $phoneNumber,
+            User::UPDATED_AT => time()
 
         ];
         $check = $this->userRepo->update($id, $dataUpdate);
