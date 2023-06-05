@@ -32,15 +32,15 @@ class ProductController extends Controller
 
     function createProduct(Request $request)
     {
-//        $request->validate(
-//            [
-//                'name' => ['required','min:3','max:20'],
-//                'category_id' =>['required|integer'],
-//                'image' => 'required',
-//                'description' => ['required','min:5'],
-//                'price' => ['required']
-//            ]
-//        );
+        $request->validate(
+            [
+                'name' => ['required'],
+                'category_id' =>['required'],
+                'image' => 'required',
+                'description' => ['required'],
+                'price' => ['required']
+            ]
+        );
         $userInfor = $request->attributes->get('user')->data;
 
         if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
@@ -75,15 +75,15 @@ class ProductController extends Controller
     function updateProduct(Request $request)
     {
 
-//        $request->validate(
-//            [
-//                'name' => ['required','min:3','max:20'],
-//                'category_id' =>['required|integer'],
-//                'image' => 'required',
-//                'description' => ['required','min:5'],
-//                'price' => ['required']
-//            ]
-//        );
+        $request->validate(
+            [
+                'name' => ['required'],
+                'category_id' =>['required'],
+                'image' => 'required',
+                'description' => ['required'],
+                'price' => ['required']
+            ]
+        );
         $userInfor = $request->attributes->get('user')->data;
         if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
             $this->message = 'User no permission';

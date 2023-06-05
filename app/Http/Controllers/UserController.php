@@ -91,6 +91,15 @@ class UserController extends Controller
 //
 //
 //        ]);
+        $request->validate([
+            'email' => ['required' ],
+            'password' => ['required'],
+            'fullName' => ['required'],
+            'address' => ['required'],
+            'phoneNumber' => ['required']
+
+
+        ]);
         $userInfo = (array)$request->attributes->get('user')->data;
         $checkPermission = $this->checkPermissionUser($userInfo['role'], [User::ADMIN,User::MANAGER, User::STAFF, User::USER]);
 

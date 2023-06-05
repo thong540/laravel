@@ -157,4 +157,8 @@ class OrderRepository extends EloquentRepository
 
 
     }
+    public function getList($page, $limit)
+    {
+        return $this->_model->limit($limit)->offset(($page - 1) * $limit)->get()->toArray();
+    }
 }

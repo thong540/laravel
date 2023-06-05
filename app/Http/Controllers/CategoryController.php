@@ -36,13 +36,13 @@ class CategoryController extends Controller
 
     public function createCategory(Request $request)
     {
-//      $request->validate(
-//          [
-//              'name' => ['required'],
-//              'parent_id' => ['required'],
-//              'description' => ['required']
-//          ]
-//      );
+      $request->validate(
+          [
+              'name' => ['required'],
+              'parent_id' => ['required'],
+              'description' => ['required']
+          ]
+      );
         $userInfor = (array)$request->attributes->get('user')->data;
         if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
             $this->message = 'user no permission';
@@ -76,13 +76,13 @@ class CategoryController extends Controller
     public function updateCategory(Request $request)
     {
 
-//        $request->validate(
-//            [
-//                'name' => ['required', 'min:3'],
-//                'parent_id' => ['required'],
-//                'description' => ['required']
-//            ]
-//        );
+        $request->validate(
+            [
+                'name' => ['required'],
+                'parent_id' => ['required'],
+                'description' => ['required']
+            ]
+        );
         $userInfor = (array)$request->attributes->get('user')->data;
         if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
             $this->message = 'user no permission';

@@ -29,10 +29,10 @@ class CustomerController extends Controller
     function createCustomer(Request $request)
     {
         $request->validate([
-            'email' => ['required|email|ends_with:@gmail.com' ],
-            'fullName' => ['required','min:3','max:20'],
-            'address' => ['required','min:3','max:20'],
-            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+            'email' => ['required' ],
+            'fullName' => ['required'],
+            'address' => ['required'],
+            'phoneNumber' => ['required']
 
 
         ]);
@@ -65,10 +65,10 @@ class CustomerController extends Controller
     function updateCustomer(Request $request)
     {
         $request->validate([
-            'email' => ['required|email|ends_with:@gmail.com' ],
-            'fullName' => ['required','min:3','max:20'],
-            'address' => ['required','min:3','max:20'],
-            'phoneNumber' => ['required|min:10|regex:/(01)[0-9]{9}/']
+            'email' => ['required' ],
+            'fullName' => ['required'],
+            'address' => ['required'],
+            'phoneNumber' => ['required']
 
 
         ]);
