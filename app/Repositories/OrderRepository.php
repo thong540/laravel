@@ -54,7 +54,40 @@ class OrderRepository extends EloquentRepository
             ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
             ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
             ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
-       // dd($query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get()->toArray());
+        // dd($query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get()->toArray());
+        if (!isset($orderId)) {
+            return false;
+        }
+        return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get();
+    }
+
+    public function getInformationCustomerById($orderId)
+    {
+        $query = $this->_model->select(
+            Customer::TABLE . '.' . Customer::_ID,
+            Customer::TABLE . '.' . Customer::_EMAIL,
+            Customer::TABLE . '.' . Customer::_FULLNAME,
+            Customer::TABLE . '.' . Customer::_ADDRESS,
+            Customer::TABLE . '.' . Customer::_PHONENUMBER,
+            Order::TABLE . '.' . Order::_STATUS)
+            ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID);
+        if (!isset($orderId)) {
+            return false;
+        }
+        return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get();
+    }
+
+    public function getDetailProductInOrdeById($orderId)
+    {
+        $query = $this->_model->select(
+            Product::TABLE . '.' . Product::_ID,
+            Product::TABLE . '.' . Product::_NAME,
+            Product::TABLE . '.' . Product::_IMAGE,
+            Product::TABLE . '.' . Product::_DESCRIPTION,
+            Product::TABLE . '.' . Product::_PRICE,
+            OrderProduct::TABLE . '.' . OrderProduct::_QUANTITY)
+            ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
+            ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
         if (!isset($orderId)) {
             return false;
         }
@@ -157,8 +190,10 @@ class OrderRepository extends EloquentRepository
 
 
     }
+
     public function getList($page, $limit)
     {
         return $this->_model->limit($limit)->offset(($page - 1) * $limit)->get()->toArray();
     }
+
 }

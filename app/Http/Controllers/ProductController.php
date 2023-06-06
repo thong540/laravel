@@ -91,13 +91,13 @@ class ProductController extends Controller
         }
         $id = $request->input('id');
         $name = $request->input('name');
-        $category_id = $request->input('category_id');
+        $categoryId = $request->input('category_id');
         $image = $request->input('image');
         $description = $request->input('description');
         $price = $request->input('price');
         $dataUpdate = [
             Product::_NAME => $name,
-            Product::_CATEGORY_ID => $category_id,
+            Product::_CATEGORY_ID => $categoryId,
             Product::_IMAGE => $image,
             Product::_DESCRIPTION => $description,
             Product::_PRICE => $price,

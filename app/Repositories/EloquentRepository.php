@@ -59,7 +59,7 @@ abstract class EloquentRepository implements RepositoryInterface
 
     public function findOneField($fieldName, $value)
     {
-        $result = $this->_model->where($fieldName, $value)->get()->toArray();
+        $result = $this->_model->where($fieldName, $value)->get();
         return $result;
     }
 

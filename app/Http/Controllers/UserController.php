@@ -45,7 +45,7 @@ class UserController extends Controller
             goto next;
         }
 //        $request->validate([
-////            'email' => ['required|email|ends_with:@gmail.com' ],
+//            'email' => ['required|email|ends_with:@gmail.com' ],
 //            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
 //            'fullName' => ['required','min:3','max:20'],
 //            'address' => ['required','min:3','max:20'],
@@ -53,6 +53,13 @@ class UserController extends Controller
 //
 //
 //        ]);
+        $request->validate([
+           'email' => 'required',
+            'password' => 'required',
+            'fullName' => 'required',
+            'address' => 'required',
+            'phoneNumber' => 'required',
+        ]);
         $email = $request->input('email');
         $password = $request->input('password');
         $fullName = $request->input('fullName');

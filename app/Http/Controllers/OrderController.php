@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Repositories\CustomerRepository;
 use App\Repositories\OrderProductRepository;
@@ -16,7 +17,7 @@ class OrderController extends Controller
     //
     private $orderRepo, $customerRepo, $orderProductRepo, $productRepo;
 
-    function __construct(OrderRepository $orderRepo, CustomerRepository $customerRepo , OrderProductRepository $orderProductRepo, ProductRepository $productRepo)
+    function __construct(OrderRepository $orderRepo, CustomerRepository $customerRepo, OrderProductRepository $orderProductRepo, ProductRepository $productRepo)
     {
         $this->orderRepo = $orderRepo;
         $this->customerRepo = $customerRepo;
@@ -76,11 +77,11 @@ class OrderController extends Controller
             goto next;
         }
 
-        $user_id = $userInfor->userId;
+        $userId = $userInfor->userId;
         $customerFindByPhoneNumber = $this->customerRepo->findOneField(Customer::_PHONENUMBER, $phoneNumber);
         // $customer_id = null;
         if ($customerFindByPhoneNumber) {
-            $customer_id = $customerFindByPhoneNumber[0]['id'];
+            $customerId = $customerFindByPhoneNumber[0]['id'];
         } else {
             $dataInsert = [
                 Customer::_EMAIL => $email,
@@ -96,12 +97,12 @@ class OrderController extends Controller
                 $this->message = 'No create new customer';
                 goto next;
             }
-            $customer_id = $newCustomerId;
+            $customerId = $newCustomerId;
         }
         $dataInsert = [
             Order::_NAME => $name,
-            Order::_USER_ID => $user_id,
-            Order::_CUSTOMER_ID => $customer_id,
+            Order::_USER_ID => $userId,
+            Order::_CUSTOMER_ID => $customerId,
             Order::_STATUS => 1,
             Order::_CREATED_AT => time(),
             Order::_UPDATED_AT => time()
@@ -112,52 +113,102 @@ class OrderController extends Controller
             goto next;
         }
         $products = json_decode($products, true);
-       // dd($products);
-        foreach ($products as $key => $product)
-        {
-            $listProduct = $this->productRepo->find($product['product_id']);
-            dd($listProduct);
-         $dataInsert = [
-
-         ];
+        // dd($products);
+        foreach ($products as $key => $product) {
+            $informationProduct = $this->productRepo->find($product['product_id'])->toArray();
+            $priceProduct = $informationProduct['price'];
+            $dataInsert = [
+                OrderProduct::_ORDER_ID => $newOrderId,
+                OrderProduct::_PRODUCT_ID => $product['product_id'],
+                OrderProduct::_PRICE => $priceProduct,
+                OrderProduct::_QUANTITY => $product['quantity'],
+                OrderProduct::_CREATED_AT => time(),
+                OrderProduct::_UPDATED_AT => time(),
+            ];
+            $checkInsertData = $this->orderProductRepo->insert($dataInsert);
+            if (!$checkInsertData) {
+                $this->message = 'No insert data at order_products table';
+                goto next;
+            }
         }
         $this->status = 'success';
         $this->message = 'created new order';
         next:
-        return $this->responseData($orderId ?? []);
+        return $this->responseData($newOrderId ?? []);
 
     }
+
+    public function updateProductInOrder(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required',
+
+
+        ]);
+        $orderId = $request->input('order_id');
+        $products = $request->input('products');
+
+        $currentListproducts = json_decode($products, true);
+        $listProducts = $this->orderProductRepo->findOneField(OrderProduct::_ORDER_ID, $orderId)->toArray();
+        foreach ($currentListproducts as $product) {
+
+        }
+        dd($currentListproducts, $listProducts);
+
+
+    }
+
 
     function updateOrder(Request $request)
     {
 
         $request->validate(
             [
-                'name' => 'required',
-                'user_id' => 'required',
-                'customer_id' => 'required',
-                'status' => 'required'
+                'order_id' => 'required',
+                'phoneNumber' => 'required',
+                'fullName' => 'required',
+                'address' => 'required'
             ]
         );
         $userInfor = $request->attributes->get('user')->data;
-        if (!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        $userRole = $userInfor->role;
+        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }
-        $id = $request->input('id');
-        $name = $request->input('name');
-        $user_id = $request->input('user_id');
-        $customer_id = $request->input('customer_id');
-        $status = $request->input('status');
+        $orderId = $request->input('order_id');
+        $phoneNumber = $request->input('phoneNumber');
+        $fullName = $request->input('fullName');
+        $address = $request->input('address');
+        $informationOrder = $this->orderRepo->find($orderId)->toArray();
+        $customerId = $informationOrder['customer_id'];
+        $informationCustomer = $this->customerRepo->findOneField(Customer::_PHONENUMBER, $phoneNumber)->toArray();
+        if (!$informationCustomer) {
+            $checkUpdateCustomer = $this->customerRepo->update($customerId, [Customer::_PHONENUMBER => $phoneNumber]);
+            if (!$checkUpdateCustomer) {
+                $this->message = 'No update phoneNumber';
+                goto next;
+            }
+
+        } else {
+            $customerIdUpdate = $informationCustomer[0]['id'];
+            $checkUpdate = $this->customerRepo->update($customerIdUpdate, [
+                Customer::_FULLNAME => $fullName,
+                Customer::_ADDRESS => $address
+            ]);
+            if (!$checkUpdate) {
+                $this->message = 'No update information customer';
+                goto next;
+            }
+
+//            dd($customerIdUpdate, $customerId);
+        }
 
         $dataUpdate = [
-            Order::_NAME => $name,
-            Order::_USER_ID => $user_id,
-            Order::_CUSTOMER_ID => $customer_id,
-            Order::_STATUS => $status,
+            Order::_CUSTOMER_ID => $customerIdUpdate,
             Order::_UPDATED_AT => time()
         ];
-        $newOrderId = $this->orderRepo->update($id, $dataUpdate);
+        $newOrderId = $this->orderRepo->update($orderId, $dataUpdate);
         if (!$newOrderId) {
             $this->message = 'No update order';
             goto next;
@@ -166,7 +217,7 @@ class OrderController extends Controller
         $this->status = 'success';
         $this->message = 'updated order';
         next:
-        return $this->responseData($dataUpdate);
+        return $this->responseData($dataUpdate ?? []);
 
     }
 
@@ -192,36 +243,42 @@ class OrderController extends Controller
     public function getDetailOrder(Request $request)
     {
 
-//        $request->validate([
-//            'order_id' => 'required'
-//        ]);
-        $orderId = $request->input('order_id');
-
-        if (!isset($orderId)) {
-            $this->message = 'OrderId is required';
-
+        $userInfor = $request->attributes->get('user')->data;
+        $userRole = $userInfor->role;
+        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message = 'user no permission';
             goto next;
         }
-        $orderDetail = $this->orderRepo->getDetailOrderById($orderId);
 
-        if (!$orderDetail) {
+        $request->validate([
+            'order_id' => 'required'
+        ]);
+        $orderId = $request->input('order_id');
+        $informationCustomer = $this->orderRepo->getInformationCustomerById($orderId)->toArray();
+        $listProducts = $this->orderRepo->getDetailProductInOrdeById($orderId)->toArray();
+        $informationStaff = $userInfor;
+        $statusOrder = $informationCustomer[0]['status'];
+        unset($informationCustomer[0]['status']);
+        if (!$informationCustomer || !$listProducts) {
             $this->message = 'Not found by OrderId';
             goto next;
         }
 
         $totalPrice = 0;
 
-        foreach ($orderDetail as $product) {
+        foreach ($listProducts as $product) {
             $totalPrice += $product['price'] * $product['quantity'];
         }
-
-        $data['information_order'] = $orderDetail;
+        $data['information_customer'] = $informationCustomer;
+        $data['list_products'] = $listProducts;
         $data['total_price'] = $totalPrice;
+        $data['status'] = $statusOrder;
+        $data['information_staff'] = $informationStaff;
         $this->message = 'get order';
         $this->status = 'success';
-        // dd($data);
+
         next:
-//        if (!isset($data)) $data = [];
+
         return $this->responseData($data ?? []);
         // query lay thong tin don hang - order + customer + user
         // lay danh sach sp order_product => tinh ra tong gia tien don hang
@@ -230,8 +287,18 @@ class OrderController extends Controller
 
     public function updateStatusOrder(Request $request)
     {
+        $request->validate([
+            'id' => 'required',
+            'status' => 'required'
+        ]);
         $status = $request->input('status');
         $id = $request->input('id');
+        $userInfor = $request->attributes->get('user')->data;
+        $userRole = $userInfor->role;
+        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message = 'user no permission';
+            goto next;
+        }
 
         if (!$id || !$status) {
             $this->message = 'no update status in the order';
@@ -247,10 +314,6 @@ class OrderController extends Controller
         $this->message = 'updated status';
         $this->status = 'success';
         next:
-//        if (!isset($dataUpdate)) {
-//            $dataUpdate = [];
-//        }
-//        return $this->orderRepo->updateOneFieldById(Order::_STATUS, $id, $currentStatus);
         return $this->responseData($dataUpdate ?? []);
 
 
@@ -258,8 +321,11 @@ class OrderController extends Controller
 
     public function getStatusOrder(Request $request)
     {
+        $request->validate([
+            'id' => 'required'
+        ]);
         $id = $request->input('id');
-        if (!isset($OrderId)) return false;
+//        if (!isset($OrderId)) return false;
         $result = $this->orderRepo->getStatusOrder($id);
         if (!$result) {
             $this->message = 'not found order';
@@ -268,8 +334,8 @@ class OrderController extends Controller
             $this->message = 'get status';
             $this->status = 'success';
         }
-        $data = !$result ? [] : ['status' => $result[0]['status']];
-        return $this->responseData($data);
+        //  $data = !$result ? [] : ['status' => $result[0]['status']];
+        return $this->responseData($result[0] ?? []);
 
 
     }
