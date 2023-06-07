@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\HistoryActivityService;
 use App\Repositories\CustomerRepository;
 use App\Repositories\UserRepository;
 use App\Models\User;
@@ -12,15 +13,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Firebase\JWT\JWT;
+use App\Repositories\LoggerRepository;
+use App\Models\Logger;
 
 class AuthController extends Controller
 {
-    private $userRepository, $userRoleRepo;
+    private $userRepository;
+    private $historyActivityService;
+    private  $userRoleRepo;
 
-    function __construct(UserRepository $userRepository, UserRoleRepository $userRoleRepo)
+    function __construct(
+        UserRepository $userRepository,
+        UserRoleRepository $userRoleRepo,
+        HistoryActivityService $historyActivityService
+    )
     {
         $this->userRepository = $userRepository;
         $this->userRoleRepo = $userRoleRepo;
+        $this->historyActivityService = $historyActivityService;
+//        $this->loggerRepository = $loggerRepository;
 
     }
 
@@ -52,7 +63,7 @@ class AuthController extends Controller
             ];
         }
         $data = [
-            'exp' => time() + 24 * 60 * 60,
+            'exp' => time() + 7*24 * 60 * 60,
             'data' => $dataInsert,
         ];
 
@@ -67,7 +78,8 @@ class AuthController extends Controller
 
     function login(Request $request)
     {
-
+//        $this->historyActivityService->logger();
+//        dd(2123);
         $request->validate([
             'email' => ['required'],
             'password' => ['required']
@@ -88,7 +100,12 @@ class AuthController extends Controller
         ];
         $this->message = 'login success';
         $this->status = 'success';
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $checkUser['id'],
+            Logger::_ACTION => 'Login',
+            Logger::_TIME => time()]);
         next:
+
         return $this->responseData($data ?? []);
     }
 
@@ -156,7 +173,11 @@ class AuthController extends Controller
         $token = $this->generateToken($dataEncode, $role);
         $this->status = 'success';
         $this->message = 'Register success';
-
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $getUserId,
+            Logger::_ACTION => 'Register',
+            Logger::_TIME => time()
+        ]);
         $data = [
             'access_token' => $token,
         ];

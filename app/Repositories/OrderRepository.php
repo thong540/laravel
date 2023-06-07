@@ -119,8 +119,9 @@ class OrderRepository extends EloquentRepository
         return $result;
     }
 
-    public function findOrderByOneField($field, $value)
+    public function findOrderByManyField($data)
     {
+
 
         $query = $this->_model
             ->select(
@@ -134,20 +135,28 @@ class OrderRepository extends EloquentRepository
                 Product::TABLE . '.' . Product::_IMAGE,
                 Product::TABLE . '.' . Product::_DESCRIPTION,
                 Product::TABLE . '.' . Product::_PRICE,
-                OrderProduct::TABLE . '.' . OrderProduct::_QUANTITY,
-                User::TABLE . '.' . User::_FULLNAME . ' as nameStaff',
-                User::TABLE . '.' . User::_ADDRESS,
-                User::TABLE . '.' . User::_PHONENUMBER,
                 Order::TABLE . '.' . Order::_CREATED_AT,
                 Order::TABLE . '.' . Order::_UPDATED_AT)
-            ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID)
-            ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
-            ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
-            ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
-
-        if (isset($field) && isset($value)) {
-            $query = $query->where(Customer::TABLE . '.' . $field, 'like', '%' . $value . '%');
+            ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID);
+        if ($data[Order::_ID]) {
+            $query = $query->where(Order::TABLE . '.' . Order::_ID, $data[Order::_ID]);
         }
+        if ($data[Order::_STATUS]) {
+            $query = $query->where(Order::TABLE . '.' . Order::_STATUS, $data[Order::_STATUS]);
+        }
+        if ($data[Customer::_EMAIL]) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_EMAIL, $data[Customer::_EMAIL]);
+        }
+        if ($data[Customer::_PHONENUMBER]) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_PHONENUMBER, $data[Customer::_PHONENUMBER]);
+        };
+        if ($data[Product::_ID]) {
+            $query
+                ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
+                ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID)
+                ->where(Product::TABLE . '.' . Product::_ID, $data[Product::_ID]);
+        }
+
         return $query->get();
 
 

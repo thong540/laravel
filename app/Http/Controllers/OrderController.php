@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\HistoryActivityService;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -15,14 +16,16 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     //
-    private $orderRepo, $customerRepo, $orderProductRepo, $productRepo;
+    private $orderRepo, $customerRepo, $orderProductRepo, $productRepo, $historyActivityService;
 
-    function __construct(OrderRepository $orderRepo, CustomerRepository $customerRepo, OrderProductRepository $orderProductRepo, ProductRepository $productRepo)
+    function __construct(OrderRepository $orderRepo, CustomerRepository $customerRepo, OrderProductRepository $orderProductRepo,
+                         ProductRepository $productRepo, HistoryActivityService $historyActivityService)
     {
         $this->orderRepo = $orderRepo;
         $this->customerRepo = $customerRepo;
         $this->orderProductRepo = $orderProductRepo;
         $this->productRepo = $productRepo;
+        $this->historyActivityService = $historyActivityService;
     }
 
     private function checkPermissionOrder($userRole, $roleExecute = [])
@@ -38,6 +41,7 @@ class OrderController extends Controller
         $limit = $request->input('limit');
         $page = $request->input('page');
         if (!isset($limit) && !isset($page)) {
+
             $orders = $this->orderRepo->getAll();
             $this->message = 'get all orders';
         } else {
@@ -150,16 +154,64 @@ class OrderController extends Controller
 
         $currentListproducts = json_decode($products, true);
         $listProducts = $this->orderProductRepo->findOneField(OrderProduct::_ORDER_ID, $orderId)->toArray();
-        foreach ($currentListproducts as $product) {
-
+        foreach ($currentListproducts as $currentProduct) {
+            foreach ($listProducts as $key => $oldProduct) {
+                if ($currentProduct['product_id'] == $oldProduct['product_id']) {
+                    $currentProduct = array_merge($currentProduct, ['id' => $oldProduct['id']]);
+                    unset($listProducts[$key]);
+                }
+            }
         }
-        dd($currentListproducts, $listProducts);
+        foreach ($currentListproducts as $currentProduct) {
+            if (isset($currentProduct['id'])) {
+
+                $checkUpdateData = $this->orderProductRepo->update($currentProduct['id'], [
+                    OrderProduct::_PRODUCT_ID => $currentProduct['product_id'],
+                    OrderProduct::_QUANTITY => $currentProduct['quantity'],
+                    OrderProduct::_UPDATED_AT => time()
+                ]);
+                if (!$checkUpdateData) {
+                    $this->message = 'No, update data';
+                    goto next;
+                }
+            } else {
+
+                $informationProduct = $this->productRepo->find($currentProduct['product_id']);
+                $price = $informationProduct['price'];
+
+                $checkInsertData = $this->orderProductRepo->insert([
+                    OrderProduct::_ORDER_ID => $orderId,
+                    OrderProduct::_PRODUCT_ID => $currentProduct['product_id'],
+                    OrderProduct::_QUANTITY => $currentProduct['quantity'],
+                    OrderProduct::_PRICE => $price,
+                    OrderProduct::_CREATED_AT => time(),
+                    OrderProduct::_UPDATED_AT => time()
+                ]);
+                if (!$checkInsertData) {
+                    $this->message = 'No, insert data';
+                    goto next;
+                }
+
+            }
+        }
+        foreach ($listProducts as $product) {
+
+            $checkDeleteData = $this->orderProductRepo->delete($product['id']);
+            if (!$checkDeleteData) {
+                $this->message = 'No, delete data';
+                goto next;
+            }
+        }
 
 
+        $this->message = 'updated list product';
+        $this->status = 'success';
+        next:
+        return $this->responseData($data ?? []);
     }
 
 
-    function updateOrder(Request $request)
+    public function updateOrder(Request $request)
     {
 
         $request->validate(
@@ -340,9 +392,9 @@ class OrderController extends Controller
 
     }
 
-    public function findOrderByOneField(Request $request)
+    public function findOrderByManyField(Request $request)
     {
-        return $this->orderRepo->findOrderByOneField($request->input('field'), $request->input('value'));
+        return $this->orderRepo->findOrderByManyField();
     }
 
     //getOrderByParams
@@ -408,5 +460,6 @@ class OrderController extends Controller
 
 
     }
+
 }
 

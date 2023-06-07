@@ -6,14 +6,23 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use App\Repositories\LoggerRepository;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
+
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     protected $message = '';
     protected $status = 'failure';
+    protected $loggerRepository;
+
+    public function __construct(LoggerRepository $loggerRepository)
+    {
+        $this->loggerRepository = $loggerRepository;
+    }
+
 
     protected function responseData($data = [])
     {
@@ -24,6 +33,16 @@ class Controller extends BaseController
             'code' => 200
         ];
     }
+
+//    public function writeLogger($data)
+//    {
+//         $this->loggerRepository->insert([
+//            'user_id' => $data['user_id'],
+//            'action' => $data['action'],
+//            'time' => $data['data']
+//        ]);
+//
+//    }
 //    protected function respondWithToken($token)
 //    {
 //        return response()->json([

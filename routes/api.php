@@ -48,7 +48,7 @@ Route::middleware(['checkToken'])->group(function () {
 
 });
 
-Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
+Route::post('/order', 'App\Http\Controllers\OrderController@getAllOrders');
 //Route::post('/get-detail-order', '\App\Http\Controllers\OrderController@getDetailOrder');
 
 Route::post('/get-status-order', '\App\Http\Controllers\OrderController@getStatusOrder');
@@ -64,6 +64,6 @@ Route::get('/product', '\App\Http\Controllers\ProductController@getAllProducts')
 
 Route::post('/login', '\App\Http\Controllers\AuthController@login');
 Route::post('/register', '\App\Http\Controllers\AuthController@register');
-Route::post('/test', '\App\Http\Controllers\Api\TestController@test');
+Route::post('/test', '\App\Http\Controllers\TestController@test');
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
 //Route::apiResource('posts',PostController::class);
