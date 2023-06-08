@@ -6,7 +6,7 @@ use App\Models\Customer;
 use App\Repositories\CustomerRepository;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
-
+use Illuminate\Support\Facades\Validator;
 class CustomerController extends Controller
 {
     private $customerRepo;
@@ -64,13 +64,16 @@ class CustomerController extends Controller
 
     function updateCustomer(Request $request)
     {
-        $request->validate([
-            'email' => ['required' ],
-            'fullName' => ['required'],
-            'address' => ['required'],
-            'phoneNumber' => ['required']
-
-
+//        $request->validate([
+//            'email' => ['required'],
+//            'fullName' => ['required'],
+//            'address' => ['required'],
+//            'phoneNumber' => ['required']
+//
+//
+//        ]);
+        $validator = validator::make($request->all(), [
+            'email' => 'required|email'
         ]);
         $id = $request->input('id');
         $email = $request->input('email');

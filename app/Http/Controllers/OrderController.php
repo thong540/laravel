@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\PublicHelper;
 use App\Http\Services\HistoryActivityService;
 use App\Models\Customer;
+use App\Models\Logger;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -12,13 +14,14 @@ use App\Repositories\OrderProductRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use Illuminate\Http\Request;
+use SebastianBergmann\LinesOfCode\LinesOfCode;
 
 class OrderController extends Controller
 {
     //
     private $orderRepo, $customerRepo, $orderProductRepo, $productRepo, $historyActivityService;
 
-    function __construct(OrderRepository $orderRepo, CustomerRepository $customerRepo, OrderProductRepository $orderProductRepo,
+    function __construct(OrderRepository   $orderRepo, CustomerRepository $customerRepo, OrderProductRepository $orderProductRepo,
                          ProductRepository $productRepo, HistoryActivityService $historyActivityService)
     {
         $this->orderRepo = $orderRepo;
@@ -86,6 +89,20 @@ class OrderController extends Controller
         // $customer_id = null;
         if ($customerFindByPhoneNumber) {
             $customerId = $customerFindByPhoneNumber[0]['id'];
+            $dataUpdate = [
+                Customer::_EMAIL => $email,
+                Customer::_FULLNAME => $fullName,
+                Customer::_ADDRESS => $address,
+                Customer::_PHONENUMBER => $phoneNumber,
+                Customer::_UPDATED_AT => time(),
+            ];
+            $checkUpdateData = $this->customerRepo->update($customerId, $dataUpdate);
+            if (!$checkUpdateData) {
+                $this->message = 'No create';
+                goto next;
+            }
+
+
         } else {
             $dataInsert = [
                 Customer::_EMAIL => $email,
@@ -137,6 +154,11 @@ class OrderController extends Controller
         }
         $this->status = 'success';
         $this->message = 'created new order';
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $userId,
+            Logger::_ACTION => 'create new order, order_id:  ' . $newOrderId,
+            Logger::_TIME => time(),
+        ]);
         next:
         return $this->responseData($newOrderId ?? []);
 
@@ -151,18 +173,32 @@ class OrderController extends Controller
         ]);
         $orderId = $request->input('order_id');
         $products = $request->input('products');
+        $userInfor = $request->attributes->get('user')->data;
+        $userRole = $userInfor->role;
+        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+            $this->message = 'user no permission';
+            goto next;
+        }
 
-        $currentListproducts = json_decode($products, true);
+        $userId = $userInfor->userId;
+
+        $currentListProducts = json_decode($products, true);
         $listProducts = $this->orderProductRepo->findOneField(OrderProduct::_ORDER_ID, $orderId)->toArray();
-        foreach ($currentListproducts as $currentProduct) {
-            foreach ($listProducts as $key => $oldProduct) {
-                if ($currentProduct['product_id'] == $oldProduct['product_id']) {
-                    $currentProduct = array_merge($currentProduct, ['id' => $oldProduct['id']]);
+
+        foreach ($currentListProducts as $index => $currentProduct)
+        {
+            foreach ($listProducts as $key => $oldProduct)
+            {
+                if ($currentListProducts[$index]['product_id'] == $oldProduct['product_id']) {
+                    $currentListProducts[$index] = array_merge($currentListProducts[$index], ['id' => $oldProduct['id']]);
                     unset($listProducts[$key]);
                 }
             }
+
         }
-        foreach ($currentListproducts as $currentProduct) {
+
+        foreach ($currentListProducts as $currentProduct)
+        {
             if (isset($currentProduct['id'])) {
 
                 $checkUpdateData = $this->orderProductRepo->update($currentProduct['id'], [
@@ -175,7 +211,7 @@ class OrderController extends Controller
                     goto next;
                 }
             } else {
-
+                // không nên để câu truy vấn trong vòng lặp
                 $informationProduct = $this->productRepo->find($currentProduct['product_id']);
                 $price = $informationProduct['price'];
 
@@ -206,6 +242,11 @@ class OrderController extends Controller
 
         $this->message = 'updated list product';
         $this->status = 'success';
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $userId,
+            Logger::_ACTION => 'update list products in order, order_id: ' . $orderId,
+            Logger::_TIME => time()
+        ]);
         next:
         return $this->responseData($data ?? []);
     }
@@ -228,12 +269,14 @@ class OrderController extends Controller
             $this->message = 'user no permission';
             goto next;
         }
+        $userId = $userInfor->userId;
         $orderId = $request->input('order_id');
         $phoneNumber = $request->input('phoneNumber');
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $informationOrder = $this->orderRepo->find($orderId)->toArray();
         $customerId = $informationOrder['customer_id'];
+        $customerIdUpdate = null;
         $informationCustomer = $this->customerRepo->findOneField(Customer::_PHONENUMBER, $phoneNumber)->toArray();
         if (!$informationCustomer) {
             $checkUpdateCustomer = $this->customerRepo->update($customerId, [Customer::_PHONENUMBER => $phoneNumber]);
@@ -244,6 +287,7 @@ class OrderController extends Controller
 
         } else {
             $customerIdUpdate = $informationCustomer[0]['id'];
+            //dd($customerIdUpdate);
             $checkUpdate = $this->customerRepo->update($customerIdUpdate, [
                 Customer::_FULLNAME => $fullName,
                 Customer::_ADDRESS => $address
@@ -268,6 +312,12 @@ class OrderController extends Controller
 
         $this->status = 'success';
         $this->message = 'updated order';
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $userId,
+            Logger::_ACTION => 'OrderController@updateOrder',
+            Logger::_TIME => time()
+
+        ]);
         next:
         return $this->responseData($dataUpdate ?? []);
 
@@ -275,12 +325,19 @@ class OrderController extends Controller
 
     function deleteOrder(Request $request)
     {
+        $request->validate([
+            'id' => 'required'
+        ]);
+        $id = $request->input('id');
         $userInfor = $request->attributes->get('user')->data;
-        if (!$this->checkPermissionOrder($userInfor->role, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        $userRole = $userInfor->role;
+        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }
-        $id = $request->input('id');
+
+        $userId = $userInfor->userId;
+
         $check = $this->orderRepo->delete($id);
         if (!$check) {
             $this->message = 'No delete Order';
@@ -288,12 +345,21 @@ class OrderController extends Controller
         }
         $this->status = 'success';
         $this->message = 'deleted order';
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $userId,
+            Logger::_ACTION => 'delete order, order_id: ' . $id,
+            Logger::_TIME => time()
+
+        ]);
         next:
         return $this->responseData();
     }
 
     public function getDetailOrder(Request $request)
     {
+        $request->validate([
+            'order_id' => 'required'
+        ]);
 
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
@@ -302,9 +368,6 @@ class OrderController extends Controller
             goto next;
         }
 
-        $request->validate([
-            'order_id' => 'required'
-        ]);
         $orderId = $request->input('order_id');
         $informationCustomer = $this->orderRepo->getInformationCustomerById($orderId)->toArray();
         $listProducts = $this->orderRepo->getDetailProductInOrdeById($orderId)->toArray();
@@ -326,6 +389,9 @@ class OrderController extends Controller
         $data['total_price'] = $totalPrice;
         $data['status'] = $statusOrder;
         $data['information_staff'] = $informationStaff;
+        // thong tin don hang
+        // thong tin san pham
+
         $this->message = 'get order';
         $this->status = 'success';
 
@@ -351,7 +417,7 @@ class OrderController extends Controller
             $this->message = 'user no permission';
             goto next;
         }
-
+        $useId = $userInfor->userId;
         if (!$id || !$status) {
             $this->message = 'no update status in the order';
             goto next;
@@ -365,6 +431,11 @@ class OrderController extends Controller
         }
         $this->message = 'updated status';
         $this->status = 'success';
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $useId,
+            Logger::_ACTION => 'update status in order, order_id: ' . $id,
+            Logger::_TIME => time()
+        ]);
         next:
         return $this->responseData($dataUpdate ?? []);
 
@@ -377,7 +448,6 @@ class OrderController extends Controller
             'id' => 'required'
         ]);
         $id = $request->input('id');
-//        if (!isset($OrderId)) return false;
         $result = $this->orderRepo->getStatusOrder($id);
         if (!$result) {
             $this->message = 'not found order';
@@ -388,13 +458,42 @@ class OrderController extends Controller
         }
         //  $data = !$result ? [] : ['status' => $result[0]['status']];
         return $this->responseData($result[0] ?? []);
-
-
     }
 
     public function findOrderByManyField(Request $request)
     {
-        return $this->orderRepo->findOrderByManyField();
+
+//        $request->validate([
+//            'order_id' => 'required',
+//            'status_order' => 'required',
+//            'email_customer' => 'required',
+//            'phoneNumber_customer' => 'required',
+//            'product_id' => 'required'
+//        ]);
+
+        $id = $request->input('order_id');
+        $status = $request->input('status_order');
+        $email = $request->input('email_customer');
+        $phoneNumber = $request->input('phoneNumber_customer');
+        $productId = $request->input('product_id');
+        $data = [
+            Order::_ID => $id,
+            Order::_STATUS => $status,
+            Customer::_EMAIL => $email,
+            Customer::_PHONENUMBER => $phoneNumber,
+            'product_id' => $productId
+        ];
+// them phan trang, lay them danh sach san pham trong don hang
+
+        $ListOrder = $this->orderRepo->findOrderByManyField($data, $page = 0, $Limit = 10)->keyBy('orderId');
+        if (!$ListOrder)  {
+            $this->message = 'Not found order';
+            goto next;
+        }
+        $this->message = 'List orders';
+        $this->status = 'success';
+        next:
+        return $this->responseData($ListOrder ?? []);
     }
 
     //getOrderByParams

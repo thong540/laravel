@@ -18,17 +18,7 @@ class OrderRepository extends EloquentRepository
         return Order::class;
     }
 
-//    public function getDetailOrder($telephone) {
-//        $query = $this->_model
-//            ->select(Order::TABLE . '.' . Order::_ID, User::TABLE . '.' . User::_FULLNAME)
-//            ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
-//            ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID);
-//
-//        if ($telephone) {
-//            $query = $query->where(OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID, $telephone);
-//        }
-//        return $query->get();
-//    }
+
     public function getDetailOrderById($orderId)
     {
 
@@ -119,22 +109,18 @@ class OrderRepository extends EloquentRepository
         return $result;
     }
 
-    public function findOrderByManyField($data)
+    public function findOrderByManyField($data, $page, $limit)
     {
-
 
         $query = $this->_model
             ->select(
+                Order::TABLE . '.' .Order::_ID . ' as orderId',
                 Customer::TABLE . '.' . Customer::_EMAIL,
                 Customer::TABLE . '.' . Customer::_FULLNAME,
                 Customer::TABLE . '.' . Customer::_ADDRESS,
                 Customer::TABLE . '.' . Customer::_PHONENUMBER,
                 Order::TABLE . '.' . Order::_NAME,
                 Order::TABLE . '.' . Order::_STATUS,
-                Product::TABLE . '.' . Product::_NAME,
-                Product::TABLE . '.' . Product::_IMAGE,
-                Product::TABLE . '.' . Product::_DESCRIPTION,
-                Product::TABLE . '.' . Product::_PRICE,
                 Order::TABLE . '.' . Order::_CREATED_AT,
                 Order::TABLE . '.' . Order::_UPDATED_AT)
             ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID);
@@ -150,14 +136,14 @@ class OrderRepository extends EloquentRepository
         if ($data[Customer::_PHONENUMBER]) {
             $query = $query->where(Customer::TABLE . '.' . Customer::_PHONENUMBER, $data[Customer::_PHONENUMBER]);
         };
-        if ($data[Product::_ID]) {
+        if ($data['product_id']) {
             $query
                 ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
                 ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID)
-                ->where(Product::TABLE . '.' . Product::_ID, $data[Product::_ID]);
+                ->where(Product::TABLE . '.' . Product::_ID, $data['product_id']);
         }
 
-        return $query->get();
+        return $query->limit($limit)->offset(($page-1) * $limit)->get();
 
 
     }
