@@ -17,7 +17,9 @@ class UserRepository extends EloquentRepository
             ->select(
                 User::_ID,
                 User::_FULLNAME,
-                User::_EMAIL
+                User::_PHONENUMBER,
+                User::_EMAIL,
+                User::_PASSWORD
             )->where(User::_EMAIL, $email)
             ->first();
     }

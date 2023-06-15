@@ -85,9 +85,15 @@ class AuthController extends Controller
             'password' => ['required']
         ]);
         $email = $request->input('email');
+        $password = $request->input('password');
         $checkUser = $this->userRepository->getUserByEmail($email);
         if (!$checkUser) {
             $this->message = 'email is incorrect';
+            goto next;
+        }
+        $checkPassword = Hash::check($password, $checkUser['password']);
+        if (!$checkPassword) {
+            $this->message = 'password is incorrect';
             goto next;
         }
 
@@ -97,6 +103,10 @@ class AuthController extends Controller
 
         $data = [
             'access_token' => $token,
+            'user' => [
+                'name' => $checkUser[User::_FULLNAME],
+                'role' => $roleUser['role_id'],
+            ]
         ];
         $this->message = 'login success';
         $this->status = 'success';
@@ -141,7 +151,7 @@ class AuthController extends Controller
         $checkUser = $this->userRepository->findOneField(User::_EMAIL, $email);
 //        $credentials = $request->only(['email', 'password']);
 //        $token = Auth::attempt($credentials);
-        if ($checkUser) {
+        if (!$checkUser) {
             $this->message = 'Email is exist';
             $this->status = 'failure';
             goto next;

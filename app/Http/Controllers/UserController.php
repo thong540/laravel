@@ -123,7 +123,7 @@ class UserController extends Controller
         $phoneNumber = $request->input('phoneNumber');
 
         $userId = $userInfo['userId'];
-        $userRole = $userInfo['role'][0]->role_id;
+        $userRole = $userInfo['role'];
 
         if ($userId != $id && $userRole == User::USER) {
             $this->message = 'User is not permission';

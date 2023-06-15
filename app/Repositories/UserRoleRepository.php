@@ -21,10 +21,10 @@ class UserRoleRepository extends EloquentRepository
     {
         return $this->_model
             ->select(
-                UserRole::_USER_ID,
+//                UserRole::_USER_ID,
                 UserRole::_ROLE_ID,)
             ->where(UserRole::_USER_ID, $userId)
-            ->get();
+            ->first();
     }
 }
 
