@@ -148,10 +148,11 @@ class AuthController extends Controller
             User::_CREATED_AT => time(),
             User::_UPDATED_AT => time(),
         ];
-        $checkUser = $this->userRepository->findOneField(User::_EMAIL, $email);
+        $checkUser = $this->userRepository->findOneField(User::_EMAIL, $email)->toArray();
+
 //        $credentials = $request->only(['email', 'password']);
 //        $token = Auth::attempt($credentials);
-        if (!$checkUser) {
+        if ($checkUser) {
             $this->message = 'Email is exist';
             $this->status = 'failure';
             goto next;
@@ -190,6 +191,10 @@ class AuthController extends Controller
         ]);
         $data = [
             'access_token' => $token,
+            'user' => [
+                'name' => $fullName,
+                'role' => $role,
+            ]
         ];
         next:
         return $this->responseData($data);
