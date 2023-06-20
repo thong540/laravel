@@ -26,7 +26,7 @@ class ProductController extends Controller
     {
         $this->status = 'success';
         $this->message = 'get All Products';
-        $products =$this->productRepo->getAll();
+        $products =$this->productRepo->getAllProduct()->toArray();
         return $this->responseData($products);
     }
 
@@ -85,6 +85,7 @@ class ProductController extends Controller
             ]
         );
         $userInfor = $request->attributes->get('user')->data;
+
         if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
             $this->message = 'User no permission';
             goto next;
@@ -117,7 +118,7 @@ class ProductController extends Controller
     function deleteProduct(Request $request)
     {
         $userInfor = $request->attributes->get('user')->data;
-        if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
+        if(!$this->checkPermissionCustomer($userInfor->role->role_id, [User::ADMIN, User::MANAGER, User::STAFF])) {
             $this->message = 'User no permission';
             goto next;
         }
