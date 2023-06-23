@@ -19,7 +19,7 @@ class ProductController extends Controller
 
     private function checkPermissionCustomer($user, $roleExecute = [])
     {
-
+//        dd($user, $roleExecute);
         return in_array($user, $roleExecute);
     }
     function getAllProducts()
@@ -43,7 +43,7 @@ class ProductController extends Controller
         );
         $userInfor = $request->attributes->get('user')->data;
 
-        if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
+        if(!$this->checkPermissionCustomer($userInfor->role->role_id, [User::ADMIN, User::MANAGER, User::STAFF])) {
             $this->message = 'User no permission';
             goto next;
         }
@@ -86,7 +86,7 @@ class ProductController extends Controller
         );
         $userInfor = $request->attributes->get('user')->data;
 
-        if(!$this->checkPermissionCustomer($userInfor->role, [User::ADMIN, User::MANAGER, User::STAFF])) {
+        if(!$this->checkPermissionCustomer($userInfor->role->role_id, [User::ADMIN, User::MANAGER, User::STAFF])) {
             $this->message = 'User no permission';
             goto next;
         }
