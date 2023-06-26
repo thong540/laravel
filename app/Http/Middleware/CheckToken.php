@@ -36,10 +36,10 @@ class CheckToken
 //        }
 //        return $next($request);
         $token = $request->header('access_token');
-        if(!$token) {
+        if (!$token) {
             $token = $request->input('access_token');
         }
-        if(!$token) {
+        if (!$token) {
             return response()->json('Permission denied', 401);
         }
         try {
