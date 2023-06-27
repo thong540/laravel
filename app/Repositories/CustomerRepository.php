@@ -17,6 +17,10 @@ class CustomerRepository extends EloquentRepository
             ->where(Customer::_ID, $id)
             ->update($dataUpdate);
     }
+    public function getList($page, $limit)
+    {
+        return $this->_model->limit($limit)->offset(($page - 1) * $limit)->get()->toArray();
+    }
 
 
 }

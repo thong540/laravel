@@ -22,12 +22,22 @@ class ProductController extends Controller
 //        dd($user, $roleExecute);
         return in_array($user, $roleExecute);
     }
-    function getAllProducts()
+    function getAllProducts(Request $request)
     {
-        $this->status = 'success';
-        $this->message = 'get All Products';
-        $products =$this->productRepo->getAllProduct()->toArray();
-        return $this->responseData($products);
+        $limit = $request->input('limit');
+        $page = $request->input('page');
+        $id = $request->input('id');
+        $name = $request->input('name');
+        $category = $request->input('category');
+        $total = $this->productRepo->countAll();
+        dd($category, $name, $id, $limit, $page);
+        $products = $this->productRepo->getListProduct($page, $limit, $id, $name, $category);
+
+        $data['data'] = $products;
+        $data['total'] = $total;
+
+        $this->status="success";
+        return $this->responseData($data);
     }
 
     function createProduct(Request $request)
@@ -133,6 +143,14 @@ class ProductController extends Controller
         next:
         return $this->responseData();
     }
+//    function findProductManyField(Request $request)
+//    {
+//        $id = $request->input('id');
+//        $name = $request->input('name');
+//        $category = $request->input('category');
+//
+//
+//    }
 //    /**
 //     * Display a listing of the resource.
 //     *

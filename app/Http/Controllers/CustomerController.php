@@ -16,12 +16,20 @@ class CustomerController extends Controller
         $this->customerRepo = $customerRepo;
     }
 
-    function getAllCustomers()
+    function getAllCustomers(Request $request)
     {
+        $limit = $request->input('limit');
+        $page = $request->input('page');
+        if (!isset($limit) && !isset($page)) {
 
-        $this->status = 'success';
-        $this->message = 'get All Customers';
-        $customers =$this->customerRepo->getAll();;
+            $this->status = 'success';
+            $this->message = 'get All Customers';
+            $customers = $this->customerRepo->getAll();;
+        } else {
+            $this->status = 'success';
+            $this->message = 'get List Customers';
+            $customers = $this->customerRepo->getList($page, $limit);;
+        }
         return $this->responseData($customers);
 
     }
