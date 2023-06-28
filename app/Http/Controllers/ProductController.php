@@ -25,17 +25,15 @@ class ProductController extends Controller
     function getAllProducts(Request $request)
     {
         $limit = $request->input('limit');
-        $page = $request->input('page');
+        $page = $request->input('page', 1);
         $id = $request->input('id');
         $name = $request->input('name');
         $category = $request->input('category');
         $name = urldecode($name);
-//        dd($name);
-        $total = $this->productRepo->countAll();
         $products = $this->productRepo->getListProduct($page, $limit, $id, $name, $category);
 
         $data['data'] = $products;
-        $data['total'] = $total;
+        $data['total'] = $this->productRepo->getTotal();
 
         $this->status="success";
         return $this->responseData($data);

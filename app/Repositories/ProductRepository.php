@@ -15,6 +15,8 @@ class ProductRepository extends EloquentRepository
         return Product::class;
     }
 
+    private $total;
+
     public function getAllProduct()
     {
         return $this->_model->select(Product::TABLE . '.*', Category::TABLE . '.' . Category::_NAME . ' as category_name')
@@ -26,26 +28,35 @@ class ProductRepository extends EloquentRepository
     {
 //        dd(123);
 //        dd($category, $name, $id, $limit, $page);
-       $query = $this->_model->select(Product::TABLE . '.*', Category::TABLE . '.' . Category::_NAME . ' as category_name')
-           ->join(Category::TABLE, Category::TABLE . '.' . Category::_ID, Product::TABLE . '.' . Product::_CATEGORY_ID);
-        if ($id)
-        {
+        $query = $this->_model->select(Product::TABLE . '.*', Category::TABLE . '.' . Category::_NAME . ' as category_name')
+            ->join(Category::TABLE, Category::TABLE . '.' . Category::_ID, Product::TABLE . '.' . Product::_CATEGORY_ID);
+        if ($id) {
             $query = $query->where(Product::TABLE . '.' . Product::_ID, $id);
         }
-        if ($name)
-        {
-            $query = $query->where(Product::TABLE . '.' . Product::_NAME,'LIKE','%'.$name.'%');
+        if ($name) {
+            $query = $query->where(Product::TABLE . '.' . Product::_NAME, 'LIKE', '%' . $name . '%');
         }
-        if($category)
-        {
+        if ($category) {
             $query = $query->where(Category::TABLE . '.' . Category::_ID, $category);
         }
 //        dd($query->get()->toArray());
 //        if ($limit < count($query->get()->toArray())) {
-            $query = $query->limit($limit)->offset(($page - 1) * $limit);
- //       }
+//        dd($query->count());
+        $this->setTotal($query->count());
+        $query = $query->limit($limit)->offset(($page - 1) * $limit);
+
+        //       }
 
         return $query->get()->toArray();
     }
 
+    function setTotal($total)
+    {
+        $this->total = $total;
+    }
+
+    function getTotal()
+    {
+        return $this->total;
+    }
 }

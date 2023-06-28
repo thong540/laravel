@@ -3,6 +3,8 @@ namespace App\Repositories;
 
 //use App\Repositories\RepositoryInterface;
 use App\Models\User;
+use http\Env\Request;
+
 class UserRepository extends EloquentRepository
 {
 
@@ -22,5 +24,11 @@ class UserRepository extends EloquentRepository
                 User::_PASSWORD
             )->where(User::_EMAIL, $email)
             ->first();
+    }
+    public function listUser(Request $request)
+    {
+        $limit = $request->input('limit');
+        $page = $request->input('page');
+
     }
 }
