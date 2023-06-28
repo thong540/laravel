@@ -29,8 +29,9 @@ class ProductController extends Controller
         $id = $request->input('id');
         $name = $request->input('name');
         $category = $request->input('category');
+        $name = urldecode($name);
+//        dd($name);
         $total = $this->productRepo->countAll();
-        dd($category, $name, $id, $limit, $page);
         $products = $this->productRepo->getListProduct($page, $limit, $id, $name, $category);
 
         $data['data'] = $products;

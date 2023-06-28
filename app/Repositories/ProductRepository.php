@@ -25,7 +25,7 @@ class ProductRepository extends EloquentRepository
     public function getListProduct($page, $limit, $id = null, $name = null, $category = null)
     {
 //        dd(123);
-        dd($category);
+//        dd($category, $name, $id, $limit, $page);
        $query = $this->_model->select(Product::TABLE . '.*', Category::TABLE . '.' . Category::_NAME . ' as category_name')
            ->join(Category::TABLE, Category::TABLE . '.' . Category::_ID, Product::TABLE . '.' . Product::_CATEGORY_ID);
         if ($id)
@@ -38,13 +38,12 @@ class ProductRepository extends EloquentRepository
         }
         if($category)
         {
-
             $query = $query->where(Category::TABLE . '.' . Category::_ID, $category);
         }
-
-        if ($limit) {
+//        dd($query->get()->toArray());
+//        if ($limit < count($query->get()->toArray())) {
             $query = $query->limit($limit)->offset(($page - 1) * $limit);
-        }
+ //       }
 
         return $query->get()->toArray();
     }
