@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['checkToken'])->group(function () {
 
-    Route::get('/user', 'App\Http\Controllers\UserController@getAllUsers');
+    Route::get('/user', 'App\Http\Controllers\UserController@getListUser');
     Route::post('/create-user', 'App\Http\Controllers\UserController@createUser');
     Route::post('/update-user', 'App\Http\Controllers\UserController@updateUser');
     Route::delete('/delete-user', 'App\Http\Controllers\UserController@deleteUser');
@@ -32,7 +32,7 @@ Route::middleware(['checkToken'])->group(function () {
 
     Route::post('/create-customer', 'App\Http\Controllers\CustomerController@createCustomer');
     Route::post('/update-customer', 'App\Http\Controllers\CustomerController@updateCustomer');
-    Route::post('/customer', 'App\Http\Controllers\CustomerController@getAllCustomers');
+    Route::get('/customer', 'App\Http\Controllers\CustomerController@getListCustomer');
     Route::delete('/delete-customer', 'App\Http\Controllers\CustomerController@deleteCustomer');
 
     Route::post('/create-order', 'App\Http\Controllers\OrderController@createOrder');
@@ -51,11 +51,13 @@ Route::middleware(['checkToken'])->group(function () {
 Route::post('/order', 'App\Http\Controllers\OrderController@getAllOrders');
 Route::post('/get-status-order', 'App\Http\Controllers\OrderController@getStatusOrder');
 
-Route::get('/category', 'App\Http\Controllers\CategoryController@getAllCategories');
+Route::get('/category', 'App\Http\Controllers\CategoryController@getListCategory');
 Route::get('/product', 'App\Http\Controllers\ProductController@getAllProducts');
 
 Route::post('/login', 'App\Http\Controllers\AuthController@login');
 Route::post('/register', 'App\Http\Controllers\AuthController@register');
+Route::get('/get-role', 'App\Http\Controllers\RoleController@getListRole');
+
 Route::post('/test', 'App\Http\Controllers\TestController@test');
 //Route::post('posts', 'App\Http\Controllers\Api\PostController@test');
 //Route::apiResource('posts',PostController::class);

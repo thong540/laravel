@@ -30,12 +30,24 @@ class UserController extends Controller
         return false;
     }
 
-    function getAllusers()
+    function getListUser(Request $request)
     {
+        $limit = $request->input('limit', 5);
+        $page = $request->input('page',1);
+        $email = $request->input('email');
+        $fullName = $request->input('fullName');
+        $phoneNumber = $request->input('phoneNumber');
+        $address = $request->input('address');
+        $role = $request->input('role');
+        $listUser = $this->userRepo->listUser($page, $limit, $email, $fullName, $phoneNumber, $address, $role);
+        if (!$listUser) {
+            $this->message = 'Error';
+        }
+        $data['data'] = $listUser;
+        $data['total'] = $this->userRepo->getTotal();
         $this->status = 'success';
-        $this->message = 'get All Users';
-        $users =$this->userRepo->getAll();
-        return $this->responseData($users);
+        $this->message = ' List user';
+        return $this->responseData($data);
     }
     function createUser(Request $request)
     {

@@ -28,10 +28,27 @@ class CustomerController extends Controller
         } else {
             $this->status = 'success';
             $this->message = 'get List Customers';
-            $customers = $this->customerRepo->getList($page, $limit);;
+            $customers = $this->customerRepo->getListCustomer($page, $limit);;
         }
         return $this->responseData($customers);
 
+    }
+    function getListCustomer(Request $request) {
+        $limit = $request->input('limit', 5);
+        $page = $request->input('page', 1);
+        $email = $request->input('email');
+        $fullName = $request->input('fullName');
+        $address = $request->input('address');
+        $phoneNumber = $request->input('phoneNumber');
+        $listCustomer = $this->customerRepo->getListCustomer($page, $limit,$email, $fullName, $address, $phoneNumber);
+        if (!$listCustomer) {
+            $this->message = 'Error';
+        }
+        $data['data'] = $listCustomer;
+        $data['total'] = $this->customerRepo->getTotal();
+        $this->status = 'success';
+        $this->message = 'List customer';
+        return $this->responseData($data);
     }
 
     function createCustomer(Request $request)

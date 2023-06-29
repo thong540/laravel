@@ -25,11 +25,14 @@ class CategoryController extends Controller
         return in_array($user, $roleExecute);
     }
 
-    public function getAllCategories()
+    public function getListCategory(Request $request)
     {
+        $limit = $request->input('limit');
+        $page = $request->input('page');
+
         $this->status = 'success';
         $this->message = 'get All Categories';
-        $categories = $this->categoryRepo->getAll();
+        $categories = $this->categoryRepo->getListCategory();
         return $this->responseData($categories);
 
     }

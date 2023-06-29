@@ -28,4 +28,8 @@ class CategoryRepository extends EloquentRepository
             ->where(Category::_ID, $id)
             ->update($dataUpdate);
     }
+    public function getListCategory()
+    {
+
+    }
 }
