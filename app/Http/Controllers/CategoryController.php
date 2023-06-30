@@ -27,8 +27,8 @@ class CategoryController extends Controller
 
     public function getListCategory(Request $request)
     {
-        $limit = $request->input('limit');
-        $page = $request->input('page');
+//        $limit = $request->input('limit');
+//        $page = $request->input('page');
 
         $this->status = 'success';
         $this->message = 'get All Categories';

@@ -19,7 +19,7 @@ Route::middleware(['checkToken'])->group(function () {
 
     Route::get('/user', 'App\Http\Controllers\UserController@getListUser');
     Route::post('/create-user', 'App\Http\Controllers\UserController@createUser');
-    Route::post('/update-user', 'App\Http\Controllers\UserController@updateUser');
+    Route::put('/update-user', 'App\Http\Controllers\UserController@updateUser');
     Route::delete('/delete-user', 'App\Http\Controllers\UserController@deleteUser');
 
     Route::post('/create-category', 'App\Http\Controllers\CategoryController@createCategory');

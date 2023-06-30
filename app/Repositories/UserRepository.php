@@ -42,11 +42,15 @@ class UserRepository extends EloquentRepository
             ->first();
     }
 
-    public function listUser($page, $limit, $email = null, $fullName = null, $phoneNumber = null, $address = null, $role = null)
+    public function listUser($page, $limit, $id ,$email = null, $fullName = null, $phoneNumber = null, $address = null, $role = null)
     {
         $query = $this->_model->select(User::TABLE . '.*', UserRole::_ROLE_ID . ' as role', Role::_NAME . ' as role_name')
             ->join(UserRole::TABLE, User::TABLE . '.' . User::_ID, UserRole::TABLE . '.' . UserRole::_USER_ID)
             ->join(Role::TABLE , UserRole::TABLE . '.' . UserRole::_ROLE_ID, Role::TABLE. '.' . Role::_ID);
+        if($id) {
+            $query = $query->where(User::TABLE . '.' . User::_ID, $id);
+        }
+
         if ($email) {
             $query = $query->where(User::TABLE . '.' . User::_EMAIL,'LIKE','%'. $email . '%');
         }
@@ -64,7 +68,6 @@ class UserRepository extends EloquentRepository
         }
         $this->setTotal($query->count());
         $query = $query->limit($limit)->offset(($page - 1) * $limit);
-
         return $query->get()->toArray();
 
     }

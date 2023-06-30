@@ -4,15 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Repositories\UserRepository;
+use App\Repositories\UserRoleRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 class UserController extends Controller
 {
     private $userRepo;
-    public function __construct(UserRepository $userRepo)
+    private $userRoleRepo;
+    public function __construct(UserRepository $userRepo, UserRoleRepository $userRoleRepo)
     {
         $this->userRepo = $userRepo;
+        $this->userRoleRepo = $userRoleRepo;
     }
     private function checkPermissionUser($user, $roleExecutes)
     {
@@ -21,7 +24,7 @@ class UserController extends Controller
         }
         foreach ($roleExecutes as $roleExecute) {
             //dd($user);
-           if ($user[0]->role_id == $roleExecute) {
+           if ($user == $roleExecute) {
               // dd($user['role_id'], $roleExecute);
                return true;
            }
@@ -34,12 +37,13 @@ class UserController extends Controller
     {
         $limit = $request->input('limit', 5);
         $page = $request->input('page',1);
+        $id = $request->input('id');
         $email = $request->input('email');
         $fullName = $request->input('fullName');
         $phoneNumber = $request->input('phoneNumber');
         $address = $request->input('address');
         $role = $request->input('role');
-        $listUser = $this->userRepo->listUser($page, $limit, $email, $fullName, $phoneNumber, $address, $role);
+        $listUser = $this->userRepo->listUser($page, $limit, $id ,$email, $fullName, $phoneNumber, $address, $role);
         if (!$listUser) {
             $this->message = 'Error';
         }
@@ -51,11 +55,14 @@ class UserController extends Controller
     }
     function createUser(Request $request)
     {
-        $checkPermission = $this->checkPermissionUser($request->attributes->get('user'), [User::ADMIN,User::MANAGER, User::STAFF]);
+        $userInfo = (array)$request->attributes->get('user')->data;
 
+        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN,User::MANAGER, User::STAFF, User::USER]);
         if (!$checkPermission) {
+            $this->message = 'User is not permission';
             goto next;
         }
+
 //        $request->validate([
 //            'email' => ['required|email|ends_with:@gmail.com' ],
 //            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'],
@@ -77,6 +84,8 @@ class UserController extends Controller
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
+        $role = $request->input('role');
+
 
         $dataInsert = [
             User::_EMAIL => $email,
@@ -88,8 +97,19 @@ class UserController extends Controller
             User::_UPDATED_AT => time(),
         ];
 
-        $check = $this->userRepo->insert($dataInsert);
-        if (!$check) {
+        $newUserId = $this->userRepo->insertGetId($dataInsert);
+        if (!$newUserId) {
+            $this->message = 'No create a new user';
+            goto next;
+        }
+//        dd($newUserId, intval($role));
+        $checkCreateUserRole = $this->userRoleRepo->insert([
+           'user_id' =>  $newUserId,
+            'role_id' => $role,
+            'created_at' => time(),
+            'updated_at' => time(),
+        ]);
+        if(!$checkCreateUserRole) {
             $this->message = 'No create a new user';
             goto next;
         }
@@ -110,9 +130,9 @@ class UserController extends Controller
 //
 //
 //        ]);
+
         $request->validate([
             'email' => ['required' ],
-            'password' => ['required'],
             'fullName' => ['required'],
             'address' => ['required'],
             'phoneNumber' => ['required']
@@ -120,8 +140,8 @@ class UserController extends Controller
 
         ]);
         $userInfo = (array)$request->attributes->get('user')->data;
-        $checkPermission = $this->checkPermissionUser($userInfo['role'], [User::ADMIN,User::MANAGER, User::STAFF, User::USER]);
 
+        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN,User::MANAGER, User::STAFF, User::USER]);
         if (!$checkPermission) {
             $this->message = 'User is not permission';
             goto next;
@@ -133,9 +153,10 @@ class UserController extends Controller
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
+        $role = $request->input('role');
 
         $userId = $userInfo['userId'];
-        $userRole = $userInfo['role'];
+        $userRole = $userInfo['role']->role_id;
 
         if ($userId != $id && $userRole == User::USER) {
             $this->message = 'User is not permission';
@@ -152,12 +173,14 @@ class UserController extends Controller
 
         ];
         $check = $this->userRepo->update($id, $dataUpdate);
-        if (!$check) {
+        $chekUpdate = $this->userRoleRepo->updateRoleByUserIdAndRoleId($id, $role);
+        if (!$check || !$chekUpdate ) {
             $this->message = 'No update user';
             goto next;
         }
+
         $this->status = 'success';
-        $this->message = 'message';
+        $this->message = 'updated success';
         next:
         return $this->responseData();
 
@@ -166,17 +189,14 @@ class UserController extends Controller
     {
 
         $userInfo = (array)$request->attributes->get('user')->data;
-       // dd($userInfo);
-        $checkPermission = $this->checkPermissionUser($userInfo['role'], [User::ADMIN,User::MANAGER, User::STAFF]);
+        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN,User::MANAGER, User::STAFF]);
         if (!$checkPermission) {
             $this->message = 'user is not permisson';
             goto next;
         }
-
         $id = $request->input('id');
 
         $check = $this->userRepo->delete($id);
-//        dd($check);
         if (!$check) {
             $this->message = 'No delete user';
             goto next;
