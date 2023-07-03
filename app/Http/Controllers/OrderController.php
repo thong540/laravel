@@ -41,20 +41,17 @@ class OrderController extends Controller
     {
 
 //        LIMIT. OFFSET
-        $limit = $request->input('limit');
-        $page = $request->input('page');
-        if (!isset($limit) && !isset($page)) {
+        $limit = $request->input('limit', 5);
+        $page = $request->input('page', 1);
 
-            $orders = $this->orderRepo->getAll();
-            $this->message = 'get all orders';
-        } else {
-            $orders = $this->orderRepo->getList($page, $limit);
-            $this->message = 'get list orders';
-        }
+        $orders = $this->orderRepo->getList($page, $limit);
+        $this->message = 'get list orders';
+
         $this->status = 'success';
+        $data['data'] = $orders;
+        $data['total'] = $this->orderRepo->getTotal();
 
-
-        return $this->responseData($orders);
+        return $this->responseData($data);
     }
 
     function createOrder(Request $request)
@@ -185,10 +182,8 @@ class OrderController extends Controller
         $currentListProducts = json_decode($products, true);
         $listProducts = $this->orderProductRepo->findOneField(OrderProduct::_ORDER_ID, $orderId)->toArray();
 
-        foreach ($currentListProducts as $index => $currentProduct)
-        {
-            foreach ($listProducts as $key => $oldProduct)
-            {
+        foreach ($currentListProducts as $index => $currentProduct) {
+            foreach ($listProducts as $key => $oldProduct) {
                 if ($currentListProducts[$index]['product_id'] == $oldProduct['product_id']) {
                     $currentListProducts[$index] = array_merge($currentListProducts[$index], ['id' => $oldProduct['id']]);
                     unset($listProducts[$key]);
@@ -197,8 +192,7 @@ class OrderController extends Controller
 
         }
 
-        foreach ($currentListProducts as $currentProduct)
-        {
+        foreach ($currentListProducts as $currentProduct) {
             if (isset($currentProduct['id'])) {
 
                 $checkUpdateData = $this->orderProductRepo->update($currentProduct['id'], [
@@ -363,7 +357,7 @@ class OrderController extends Controller
 
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
-        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }
@@ -371,6 +365,7 @@ class OrderController extends Controller
         $orderId = $request->input('order_id');
         $informationCustomer = $this->orderRepo->getInformationCustomerById($orderId)->toArray();
         $listProducts = $this->orderRepo->getDetailProductInOrdeById($orderId)->toArray();
+        $informationOrder = $this->orderRepo->getInformationOrderById($orderId)->toArray();
         $informationStaff = $userInfor;
         $statusOrder = $informationCustomer[0]['status'];
         unset($informationCustomer[0]['status']);
@@ -384,14 +379,12 @@ class OrderController extends Controller
         foreach ($listProducts as $product) {
             $totalPrice += $product['price'] * $product['quantity'];
         }
+        $data['information_order'] = $informationOrder;
         $data['information_customer'] = $informationCustomer;
         $data['list_products'] = $listProducts;
         $data['total_price'] = $totalPrice;
         $data['status'] = $statusOrder;
         $data['information_staff'] = $informationStaff;
-        // thong tin don hang
-        // thong tin san pham
-
         $this->message = 'get order';
         $this->status = 'success';
 
@@ -486,7 +479,7 @@ class OrderController extends Controller
 // them phan trang, lay them danh sach san pham trong don hang
 
         $ListOrder = $this->orderRepo->findOrderByManyField($data, $page = 0, $Limit = 10)->keyBy('orderId');
-        if (!$ListOrder)  {
+        if (!$ListOrder) {
             $this->message = 'Not found order';
             goto next;
         }

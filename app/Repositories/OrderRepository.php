@@ -12,12 +12,21 @@ use App\Models\User;
 class OrderRepository extends EloquentRepository
 {
 
+    private $total;
     public function getModel()
     {
         // TODO: Implement getModel() method.
         return Order::class;
     }
+    function setTotal($total)
+    {
+        $this->total = $total;
+    }
 
+    function getTotal()
+    {
+        return $this->total;
+    }
 
     public function getDetailOrderById($orderId)
     {
@@ -44,7 +53,6 @@ class OrderRepository extends EloquentRepository
             ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
             ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
             ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
-        // dd($query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get()->toArray());
         if (!isset($orderId)) {
             return false;
         }
@@ -83,7 +91,9 @@ class OrderRepository extends EloquentRepository
         }
         return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get();
     }
-
+    public function getInformationOrderById($id) {
+        return $this->_model->find($id)->first();
+    }
     public function updateOneFieldById($field, $id, $currentStatus)
     {
 
@@ -188,7 +198,11 @@ class OrderRepository extends EloquentRepository
 
     public function getList($page, $limit)
     {
-        return $this->_model->limit($limit)->offset(($page - 1) * $limit)->get()->toArray();
+        $query = $this->_model->select(Order::TABLE . '.*', User::TABLE . '.' . User::_FULLNAME . ' as userName', Customer::TABLE . '.' .Customer::_FULLNAME . ' as customerName')
+            ->join(User::TABLE, User::TABLE . '.'.User::_ID, Order::TABLE . '.'.Order::_USER_ID)
+            ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID);
+        $this->setTotal($this->_model->all()->count());
+        return $query->limit($limit)->offset(($page - 1) * $limit)->get()->toArray();
     }
 
 }

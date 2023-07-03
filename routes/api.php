@@ -37,7 +37,7 @@ Route::middleware(['checkToken'])->group(function () {
 
     Route::post('/create-order', 'App\Http\Controllers\OrderController@createOrder');
     Route::delete('/delete-order', 'App\Http\Controllers\OrderController@deleteOrder');
-    Route::post('/get-detail-order', 'App\Http\Controllers\OrderController@getDetailOrder');
+    Route::get('/get-detail-order', 'App\Http\Controllers\OrderController@getDetailOrder');
     Route::post('/update-status-order', 'App\Http\Controllers\OrderController@updateStatusOrder');
     Route::post('/update-products-in-order', 'App\Http\Controllers\OrderController@updateProductInOrder');
     Route::post('/update-order', 'App\Http\Controllers\OrderController@updateOrder');
@@ -48,7 +48,7 @@ Route::middleware(['checkToken'])->group(function () {
 
 });
 
-Route::post('/order', 'App\Http\Controllers\OrderController@getAllOrders');
+Route::get('/order', 'App\Http\Controllers\OrderController@getAllOrders');
 Route::post('/get-status-order', 'App\Http\Controllers\OrderController@getStatusOrder');
 
 Route::get('/category', 'App\Http\Controllers\CategoryController@getListCategory');
