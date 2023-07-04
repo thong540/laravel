@@ -325,7 +325,7 @@ class OrderController extends Controller
         $id = $request->input('id');
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
-        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }
@@ -406,7 +406,7 @@ class OrderController extends Controller
         $id = $request->input('id');
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
-        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }
