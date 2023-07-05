@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 //use App\Repositories\RepositoryInterface;
+use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -83,9 +84,11 @@ class OrderRepository extends EloquentRepository
             Product::TABLE . '.' . Product::_IMAGE,
             Product::TABLE . '.' . Product::_DESCRIPTION,
             Product::TABLE . '.' . Product::_PRICE,
+            Category::TABLE . '.'. Category::_NAME . ' as category_name',
             OrderProduct::TABLE . '.' . OrderProduct::_QUANTITY)
             ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
-            ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
+            ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID)
+            ->join(Category::TABLE, Category::TABLE . '.' . Category::_ID, Product::TABLE . '.' . Product::_CATEGORY_ID);
         if (!isset($orderId)) {
             return false;
         }

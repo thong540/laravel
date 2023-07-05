@@ -24,7 +24,7 @@ class ProductRepository extends EloquentRepository
             ->get();
     }
 
-    public function getListProduct($page, $limit, $id = null, $name = null, $category = null)
+    public function getListProduct($page = null , $limit= null, $id = null, $name = null, $category = null)
     {
 //        dd(123);
 //        dd($category, $name, $id, $limit, $page);
@@ -42,8 +42,12 @@ class ProductRepository extends EloquentRepository
 //        dd($query->get()->toArray());
 //        if ($limit < count($query->get()->toArray())) {
 //        dd($query->count());
-        $this->setTotal($query->count());
-        $query = $query->limit($limit)->offset(($page - 1) * $limit);
+        if ($page && $limit) {
+            $this->setTotal($query->count());
+            $query = $query->limit($limit)->offset(($page - 1) * $limit);
+
+        }
+
 
         //       }
 

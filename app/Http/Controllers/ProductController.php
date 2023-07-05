@@ -25,7 +25,7 @@ class ProductController extends Controller
     function getAllProducts(Request $request)
     {
         $limit = $request->input('limit');
-        $page = $request->input('page', 1);
+        $page = $request->input('page');
         $id = $request->input('id');
         $name = $request->input('name');
         $category = $request->input('category');
