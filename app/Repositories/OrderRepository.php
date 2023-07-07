@@ -73,7 +73,7 @@ class OrderRepository extends EloquentRepository
         if (!isset($orderId)) {
             return false;
         }
-        return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get();
+        return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->first();
     }
 
     public function getDetailProductInOrdeById($orderId)

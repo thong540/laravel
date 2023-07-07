@@ -367,8 +367,8 @@ class OrderController extends Controller
         $listProducts = $this->orderRepo->getDetailProductInOrdeById($orderId)->toArray();
         $informationOrder = $this->orderRepo->getInformationOrderById($orderId)->toArray();
         $informationStaff = $userInfor;
-        $statusOrder = $informationCustomer[0]['status'];
-        unset($informationCustomer[0]['status']);
+        $statusOrder = $informationCustomer['status'];
+        unset($informationCustomer['status']);
         if (!$informationCustomer || !$listProducts) {
             $this->message = 'Not found by OrderId';
             goto next;
