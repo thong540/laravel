@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 //use App\Repositories\RepositoryInterface;
+use App\Models\Role;
 use App\Models\UserRole;
 
 class UserRoleRepository extends EloquentRepository
@@ -25,7 +26,8 @@ class UserRoleRepository extends EloquentRepository
         return $this->_model
             ->select(
 //                UserRole::_USER_ID,
-                UserRole::_ROLE_ID,)
+                UserRole::TABLE . '.' . UserRole::_ROLE_ID, Role::TABLE . '.' . Role::_NAME)
+            ->join(Role::TABLE, Role::TABLE . '.' . Role::_ID, UserRole::TABLE . '.' . UserRole::_ROLE_ID)
             ->where(UserRole::_USER_ID, $userId)
             ->first();
     }
@@ -34,10 +36,10 @@ class UserRoleRepository extends EloquentRepository
     {
         $roleId = $this->_model->where(UserRole::_USER_ID, $userId)->first()->toArray();
         $query = $this->_model->where(UserRole::_USER_ID, $userId)->where(UserRole::_ROLE_ID, $roleId['role_id'])->update([
-                'user_id' => $userId,
-                'role_id' => $roleIdUpdate,
-                'updated_at' => time(),
-            ]);
+            'user_id' => $userId,
+            'role_id' => $roleIdUpdate,
+            'updated_at' => time(),
+        ]);
         return $query;
     }
 }

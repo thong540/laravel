@@ -106,6 +106,7 @@ class AuthController extends Controller
             'user' => [
                 'name' => $checkUser[User::_FULLNAME],
                 'role' => $roleUser['role_id'],
+                'role_name' => $roleUser['name']
             ]
         ];
         $this->message = 'login success';
