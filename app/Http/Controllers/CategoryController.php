@@ -27,25 +27,39 @@ class CategoryController extends Controller
 
     public function getListCategory(Request $request)
     {
-//        $limit = $request->input('limit');
-//        $page = $request->input('page');
+        $limit = $request->input('limit');
+        $page = $request->input('page');;
+        $parentId = $request->input('parentId');
+        $categoryId = $request->input('categoryId');
+        $categoryName = $request->input('categoryName');
+        if (!isset($limit) && !isset($page) && !isset($categoryName) && !isset($categoryId) && !isset($parentId) ) {
 
-        $this->status = 'success';
-        $this->message = 'get All Categories';
-        $categories = $this->categoryRepo->getListCategory();
-        return $this->responseData($categories);
+            $this->status = 'success';
+            $this->message = 'get All Customers';
+            $data['data'] = $this->categoryRepo->getAll();
+            $data['total'] = $this->categoryRepo->getAll()->count();
+        } else {
+            $this->status = 'success';
+            $this->message = 'get List Categories';
+            $data['data'] = $this->categoryRepo->getListCategory($page, $limit, $categoryId, $categoryName, $parentId);
+            $data['total'] = $this->categoryRepo->getTotal();
+        }
+
+
+
+        return $this->responseData($data);
 
     }
 
     public function createCategory(Request $request)
     {
-      $request->validate(
-          [
-              'name' => ['required'],
-              'parent_id' => ['required'],
-              'description' => ['required']
-          ]
-      );
+        $request->validate(
+            [
+                'name' => ['required'],
+                'parent_id' => ['required'],
+                'description' => ['required']
+            ]
+        );
         $userInfor = (array)$request->attributes->get('user')->data;
         if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
             $this->message = 'user no permission';

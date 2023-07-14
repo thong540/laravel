@@ -7,11 +7,22 @@ use App\Models\Category;
 
 class CategoryRepository extends EloquentRepository
 {
+    private $total;
 
     public function getModel()
     {
         // TODO: Implement getModel() method.
         return Category::class;
+    }
+
+    function setTotal($total)
+    {
+        $this->total = $total;
+    }
+
+    function getTotal()
+    {
+        return $this->total;
     }
 
     public function getCategoryById($id)
@@ -29,10 +40,26 @@ class CategoryRepository extends EloquentRepository
             ->update($dataUpdate);
     }
 
-    public function getListCategory()
+    public function getListCategory($page = null, $limit = null, $categoryId = null, $categoryName = null, $parentId = null)
     {
+        $query = $this->_model;
+        if ($categoryId) {
 
-        $query = $this->_model->all();
-        return $query;
+            $query = $query->where(Category::TABLE . '.' . Category::_ID, $categoryId);
+        }
+        if (isset($parentId) && $parentId >= 0) {
+            $query = $query->where(Category::TABLE . '.' . Category::_PARENT_ID, $parentId);
+        }
+        if ($categoryName) {
+            $query = $query->where(Category::TABLE . '.' . Category::_NAME, 'LIKE', '%' . $categoryName . '%');
+        }
+
+        $this->setTotal($query->count());
+        if ($page && $limit) {
+
+            $query = $query->limit($limit)->offset(($page - 1) * $limit);
+
+        }
+        return $query->get()->toArray();
     }
 }
