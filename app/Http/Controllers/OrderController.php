@@ -56,14 +56,14 @@ class OrderController extends Controller
 
     function createOrder(Request $request)
     {
-        $request->validate(
-            [
-                'name' => 'required',
-//                'user_id' => 'required',
-                'phoneNumber' => 'required',
-
-            ]
-        );
+//        $request->validate(
+//            [
+//                'name' => 'required',
+////                'user_id' => 'required',
+//                'phoneNumber' => 'required',
+//
+//            ]
+//        );
         // TẠO ĐƠN THEO sdt => CID
         // sẢN PHẨM KHÁCH HÀNG MUA, SỐ LƯỢNG
         $name = $request->input('name');
@@ -71,20 +71,18 @@ class OrderController extends Controller
         $address = $request->input('address');
         $fullName = $request->input('fullName');
         $email = $request->input('email');
-
-        $products = $request->input('products');
-
+        $listProduct = $request->input('products');
+        $status = $request->input('status');
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
-        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }
 
         $userId = $userInfor->userId;
-        $customerFindByPhoneNumber = $this->customerRepo->findOneField(Customer::_PHONENUMBER, $phoneNumber);
-        // $customer_id = null;
-        if ($customerFindByPhoneNumber) {
+        $customerFindByPhoneNumber = $this->customerRepo->findOneField(Customer::_PHONENUMBER, $phoneNumber)->toArray();
+        if (!$customerFindByPhoneNumber == false) {
             $customerId = $customerFindByPhoneNumber[0]['id'];
             $dataUpdate = [
                 Customer::_EMAIL => $email,
@@ -101,6 +99,7 @@ class OrderController extends Controller
 
 
         } else {
+
             $dataInsert = [
                 Customer::_EMAIL => $email,
                 Customer::_FULLNAME => $fullName,
@@ -121,7 +120,7 @@ class OrderController extends Controller
             Order::_NAME => $name,
             Order::_USER_ID => $userId,
             Order::_CUSTOMER_ID => $customerId,
-            Order::_STATUS => 1,
+            Order::_STATUS => $status,
             Order::_CREATED_AT => time(),
             Order::_UPDATED_AT => time()
         ];
@@ -130,8 +129,9 @@ class OrderController extends Controller
             $this->message = 'No create new order';
             goto next;
         }
-        $products = json_decode($products, true);
-        // dd($products);
+//        dd($listProduct);
+        $products = json_decode($listProduct, true);
+//        $products  = $listProduct;
         foreach ($products as $key => $product) {
             $informationProduct = $this->productRepo->find($product['product_id'])->toArray();
             $priceProduct = $informationProduct['price'];
@@ -172,7 +172,7 @@ class OrderController extends Controller
         $products = $request->input('products');
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
-        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }
@@ -259,7 +259,7 @@ class OrderController extends Controller
         );
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
-        if (!$this->checkPermissionOrder($userRole[0]->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }

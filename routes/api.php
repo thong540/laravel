@@ -24,7 +24,7 @@ Route::middleware(['checkToken'])->group(function () {
 
     Route::post('/create-category', 'App\Http\Controllers\CategoryController@createCategory');
     Route::post('/update-category', 'App\Http\Controllers\CategoryController@updateCategory');
-    Route::delete('/delete-category/', 'App\Http\Controllers\CategoryController@deleteCategory');
+    Route::delete('/delete-category', 'App\Http\Controllers\CategoryController@deleteCategory');
 
     Route::post('/create-product', 'App\Http\Controllers\ProductController@createProduct');
     Route::post('/update-product', 'App\Http\Controllers\ProductController@updateProduct');

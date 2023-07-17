@@ -14,11 +14,13 @@ class OrderRepository extends EloquentRepository
 {
 
     private $total;
+
     public function getModel()
     {
         // TODO: Implement getModel() method.
         return Order::class;
     }
+
     function setTotal($total)
     {
         $this->total = $total;
@@ -84,7 +86,7 @@ class OrderRepository extends EloquentRepository
             Product::TABLE . '.' . Product::_IMAGE,
             Product::TABLE . '.' . Product::_DESCRIPTION,
             Product::TABLE . '.' . Product::_PRICE,
-            Category::TABLE . '.'. Category::_NAME . ' as category_name',
+            Category::TABLE . '.' . Category::_NAME . ' as category_name',
             OrderProduct::TABLE . '.' . OrderProduct::_QUANTITY)
             ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
             ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID)
@@ -94,9 +96,12 @@ class OrderRepository extends EloquentRepository
         }
         return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get();
     }
-    public function getInformationOrderById($id) {
-        return $this->_model->find($id)->first();
+
+    public function getInformationOrderById($id)
+    {
+        return $this->_model->where(Order::_ID, $id)->first();
     }
+
     public function updateOneFieldById($field, $id, $currentStatus)
     {
 
@@ -127,7 +132,7 @@ class OrderRepository extends EloquentRepository
 
         $query = $this->_model
             ->select(
-                Order::TABLE . '.' .Order::_ID . ' as orderId',
+                Order::TABLE . '.' . Order::_ID . ' as orderId',
                 Customer::TABLE . '.' . Customer::_EMAIL,
                 Customer::TABLE . '.' . Customer::_FULLNAME,
                 Customer::TABLE . '.' . Customer::_ADDRESS,
@@ -156,7 +161,7 @@ class OrderRepository extends EloquentRepository
                 ->where(Product::TABLE . '.' . Product::_ID, $data['product_id']);
         }
 
-        return $query->limit($limit)->offset(($page-1) * $limit)->get();
+        return $query->limit($limit)->offset(($page - 1) * $limit)->get();
 
 
     }
@@ -201,8 +206,8 @@ class OrderRepository extends EloquentRepository
 
     public function getList($page, $limit)
     {
-        $query = $this->_model->select(Order::TABLE . '.*', User::TABLE . '.' . User::_FULLNAME . ' as userName', Customer::TABLE . '.' .Customer::_FULLNAME . ' as customerName')
-            ->join(User::TABLE, User::TABLE . '.'.User::_ID, Order::TABLE . '.'.Order::_USER_ID)
+        $query = $this->_model->select(Order::TABLE . '.*', User::TABLE . '.' . User::_FULLNAME . ' as userName', Customer::TABLE . '.' . Customer::_FULLNAME . ' as customerName')
+            ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
             ->join(Customer::TABLE, Customer::TABLE . '.' . Customer::_ID, Order::TABLE . '.' . Order::_CUSTOMER_ID);
         $this->setTotal($this->_model->all()->count());
         return $query->limit($limit)->offset(($page - 1) * $limit)->get()->toArray();
