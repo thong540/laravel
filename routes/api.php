@@ -40,7 +40,7 @@ Route::middleware(['checkToken'])->group(function () {
     Route::get('/get-detail-order', 'App\Http\Controllers\OrderController@getDetailOrder');
     Route::post('/update-status-order', 'App\Http\Controllers\OrderController@updateStatusOrder');
     Route::post('/update-products-in-order', 'App\Http\Controllers\OrderController@updateProductInOrder');
-    Route::post('/update-order', 'App\Http\Controllers\OrderController@updateOrder');
+    Route::put('/update-order', 'App\Http\Controllers\OrderController@updateOrder');
 
     Route::post('/find-order-by-many-field', 'App\Http\Controllers\OrderController@findOrderByManyField');
     Route::post('/find-order-by-customer', 'App\Http\Controllers\OrderController@findOrderByInforCustomer');

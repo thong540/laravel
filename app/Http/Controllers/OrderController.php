@@ -252,9 +252,13 @@ class OrderController extends Controller
         $request->validate(
             [
                 'order_id' => 'required',
+                'order_name' => 'required',
+                'status'  => 'required',
+                'email' => 'required',
                 'phoneNumber' => 'required',
                 'fullName' => 'required',
-                'address' => 'required'
+                'address' => 'required',
+                'products' => 'required',
             ]
         );
         $userInfor = $request->attributes->get('user')->data;
@@ -264,10 +268,15 @@ class OrderController extends Controller
             goto next;
         }
         $userId = $userInfor->userId;
+
         $orderId = $request->input('order_id');
+        $orderName = $request->input('order_name');
+        $status = $request->input('status');
+        $email = $request->input('email');
         $phoneNumber = $request->input('phoneNumber');
         $fullName = $request->input('fullName');
         $address = $request->input('address');
+        $products = $request->input('products');
         $informationOrder = $this->orderRepo->find($orderId)->toArray();
         $customerId = $informationOrder['customer_id'];
         $customerIdUpdate = null;
@@ -281,21 +290,22 @@ class OrderController extends Controller
 
         } else {
             $customerIdUpdate = $informationCustomer[0]['id'];
-            //dd($customerIdUpdate);
             $checkUpdate = $this->customerRepo->update($customerIdUpdate, [
                 Customer::_FULLNAME => $fullName,
-                Customer::_ADDRESS => $address
+                Customer::_ADDRESS => $address,
+                Customer::_EMAIL => $email
             ]);
             if (!$checkUpdate) {
                 $this->message = 'No update information customer';
                 goto next;
             }
 
-//            dd($customerIdUpdate, $customerId);
         }
 
         $dataUpdate = [
             Order::_CUSTOMER_ID => $customerIdUpdate,
+            Order::_STATUS => $status,
+            Order::_NAME => $orderName,
             Order::_UPDATED_AT => time()
         ];
         $newOrderId = $this->orderRepo->update($orderId, $dataUpdate);
@@ -312,6 +322,61 @@ class OrderController extends Controller
             Logger::_TIME => time()
 
         ]);
+        //update tbl order product
+        $currentListProducts = json_decode($products, true);
+
+        $listProducts = $this->orderProductRepo->findOneField(OrderProduct::_ORDER_ID, $orderId)->toArray();
+
+        foreach ($currentListProducts as $index => $currentProduct) {
+            foreach ($listProducts as $key => $oldProduct) {
+                if ($currentListProducts[$index]['id'] == $oldProduct['product_id']) {
+                    $currentListProducts[$index] = array_merge($currentListProducts[$index], ['id' => $oldProduct['id']]);
+                    unset($listProducts[$key]);
+                }
+            }
+
+        }
+        dd(123);
+        foreach ($currentListProducts as $currentProduct) {
+            if (isset($currentProduct['id'])) {
+
+                $checkUpdateData = $this->orderProductRepo->update($currentProduct['id'], [
+                    OrderProduct::_PRODUCT_ID => $currentProduct['product_id'],
+                    OrderProduct::_QUANTITY => $currentProduct['quantity'],
+                    OrderProduct::_UPDATED_AT => time()
+                ]);
+                if (!$checkUpdateData) {
+                    $this->message = 'No, update data';
+                    goto next;
+                }
+            } else {
+                // không nên để câu truy vấn trong vòng lặp
+                $informationProduct = $this->productRepo->find($currentProduct['product_id']);
+                $price = $informationProduct['price'];
+
+                $checkInsertData = $this->orderProductRepo->insert([
+                    OrderProduct::_ORDER_ID => $orderId,
+                    OrderProduct::_PRODUCT_ID => $currentProduct['product_id'],
+                    OrderProduct::_QUANTITY => $currentProduct['quantity'],
+                    OrderProduct::_PRICE => $price,
+                    OrderProduct::_CREATED_AT => time(),
+                    OrderProduct::_UPDATED_AT => time()
+                ]);
+                if (!$checkInsertData) {
+                    $this->message = 'No, insert data';
+                    goto next;
+                }
+
+            }
+        }
+        foreach ($listProducts as $product) {
+
+            $checkDeleteData = $this->orderProductRepo->delete($product['id']);
+            if (!$checkDeleteData) {
+                $this->message = 'No, delete data';
+                goto next;
+            }
+        }
         next:
         return $this->responseData($dataUpdate ?? []);
 
