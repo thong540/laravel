@@ -31,7 +31,7 @@ Route::middleware(['checkToken'])->group(function () {
     Route::delete('/delete-product', 'App\Http\Controllers\ProductController@deleteProduct');
 
     Route::post('/create-customer', 'App\Http\Controllers\CustomerController@createCustomer');
-    Route::post('/update-customer', 'App\Http\Controllers\CustomerController@updateCustomer');
+    Route::put('/update-customer', 'App\Http\Controllers\CustomerController@updateCustomer');
     Route::get('/customer', 'App\Http\Controllers\CustomerController@getListCustomer');
     Route::delete('/delete-customer', 'App\Http\Controllers\CustomerController@deleteCustomer');
 

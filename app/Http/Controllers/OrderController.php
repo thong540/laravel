@@ -261,6 +261,7 @@ class OrderController extends Controller
                 'products' => 'required',
             ]
         );
+
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
         if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
@@ -277,13 +278,18 @@ class OrderController extends Controller
         $fullName = $request->input('fullName');
         $address = $request->input('address');
         $products = $request->input('products');
+        $customerIdUpdate = null;
+
         $informationOrder = $this->orderRepo->find($orderId)->toArray();
         $customerId = $informationOrder['customer_id'];
-        $customerIdUpdate = null;
         $informationCustomer = $this->customerRepo->findOneField(Customer::_PHONENUMBER, $phoneNumber)->toArray();
+
         if (!$informationCustomer) {
+
             $checkUpdateCustomer = $this->customerRepo->update($customerId, [Customer::_PHONENUMBER => $phoneNumber]);
+
             if (!$checkUpdateCustomer) {
+
                 $this->message = 'No update phoneNumber';
                 goto next;
             }
@@ -302,58 +308,71 @@ class OrderController extends Controller
 
         }
 
-        $dataUpdate = [
+        $dataOrderUpdate = [
             Order::_CUSTOMER_ID => $customerIdUpdate,
             Order::_STATUS => $status,
             Order::_NAME => $orderName,
             Order::_UPDATED_AT => time()
         ];
-        $newOrderId = $this->orderRepo->update($orderId, $dataUpdate);
-        if (!$newOrderId) {
-            $this->message = 'No update order';
-            goto next;
-        }
 
-        $this->status = 'success';
-        $this->message = 'updated order';
-        $this->historyActivityService->logger([
-            Logger::_USER_ID => $userId,
-            Logger::_ACTION => 'OrderController@updateOrder',
-            Logger::_TIME => time()
-
-        ]);
+        $dataCustomerUpdate = [
+            Customer::_EMAIL => $email,
+            Customer::_PHONENUMBER => $phoneNumber,
+            Customer::_FULLNAME => $fullName,
+            Customer::_ADDRESS => $address,
+            Customer::_UPDATED_AT => time()
+        ];
         //update tbl order product
-        $currentListProducts = json_decode($products, true);
+        $lists = json_decode($products, true);
 
         $listProducts = $this->orderProductRepo->findOneField(OrderProduct::_ORDER_ID, $orderId)->toArray();
+        $lists = collect($lists)->groupBy('id')->toArray();
+        $lists = array_map(function ($products) {
+            $quantity = 0;
 
+            foreach ($products as $product) {
+                $quantity += $product['quantity'];
+            }
+
+            return $quantity;
+        }, $lists);
+//        dd($currentListProducts, $listProducts);
+        $currentListProducts = [];
+        foreach($lists as $key => $value) {
+            $x = array_push($currentListProducts, ['product_id' => $key, 'quantity' => $value]);
+        }
+
+
+        if (!$currentListProducts) goto deleteList;
         foreach ($currentListProducts as $index => $currentProduct) {
             foreach ($listProducts as $key => $oldProduct) {
-                if ($currentListProducts[$index]['id'] == $oldProduct['product_id']) {
-                    $currentListProducts[$index] = array_merge($currentListProducts[$index], ['id' => $oldProduct['id']]);
+                if ($currentListProducts[$index]['product_id'] == $oldProduct['product_id']) {
+                    $currentListProducts[$index] = array_merge($currentListProducts[$index], ['checkId' => $oldProduct['id']]);
                     unset($listProducts[$key]);
+
                 }
             }
 
         }
-        dd(123);
-        foreach ($currentListProducts as $currentProduct) {
-            if (isset($currentProduct['id'])) {
 
-                $checkUpdateData = $this->orderProductRepo->update($currentProduct['id'], [
+        foreach ($currentListProducts as $index => $currentProduct) {
+            if (isset($currentProduct['checkId'])) {
+
+                $checkUpdateData = $this->orderProductRepo->update($currentProduct['checkId'], [
                     OrderProduct::_PRODUCT_ID => $currentProduct['product_id'],
                     OrderProduct::_QUANTITY => $currentProduct['quantity'],
                     OrderProduct::_UPDATED_AT => time()
                 ]);
+
                 if (!$checkUpdateData) {
                     $this->message = 'No, update data';
                     goto next;
                 }
+
             } else {
                 // không nên để câu truy vấn trong vòng lặp
                 $informationProduct = $this->productRepo->find($currentProduct['product_id']);
                 $price = $informationProduct['price'];
-
                 $checkInsertData = $this->orderProductRepo->insert([
                     OrderProduct::_ORDER_ID => $orderId,
                     OrderProduct::_PRODUCT_ID => $currentProduct['product_id'],
@@ -369,6 +388,7 @@ class OrderController extends Controller
 
             }
         }
+        deleteList:
         foreach ($listProducts as $product) {
 
             $checkDeleteData = $this->orderProductRepo->delete($product['id']);
@@ -377,6 +397,21 @@ class OrderController extends Controller
                 goto next;
             }
         }
+        $checkUpdateOrderTable = $this->orderRepo->update($orderId, $dataOrderUpdate);
+        $checkUpdateCustomerTable = $this->customerRepo->updateByOneField(Customer::_PHONENUMBER, $phoneNumber, $dataCustomerUpdate);
+        if (!$checkUpdateOrderTable || !$checkUpdateCustomerTable) {
+            $this->message = 'No update order';
+            goto next;
+        }
+
+        $this->status = 'success';
+        $this->message = 'updated order';
+        $this->historyActivityService->logger([
+            Logger::_USER_ID => $userId,
+            Logger::_ACTION => 'OrderController@updateOrder',
+            Logger::_TIME => time()
+
+        ]);
         next:
         return $this->responseData($dataUpdate ?? []);
 
@@ -434,7 +469,8 @@ class OrderController extends Controller
         $informationStaff = $userInfor;
         $statusOrder = $informationCustomer['status'];
         unset($informationCustomer['status']);
-        if (!$informationCustomer || !$listProducts) {
+//        dd($informationCustomer,$listProducts);
+        if (!$informationCustomer) {
             $this->message = 'Not found by OrderId';
             goto next;
         }
@@ -454,7 +490,6 @@ class OrderController extends Controller
         $this->status = 'success';
 
         next:
-
         return $this->responseData($data ?? []);
         // query lay thong tin don hang - order + customer + user
         // lay danh sach sp order_product => tinh ra tong gia tien don hang
