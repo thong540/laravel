@@ -31,18 +31,20 @@ class OrderRepository extends EloquentRepository
         return $this->total;
     }
 
-    public function getDetailOrderById($orderId)
+    public function getListOrderDetail($params)
     {
 
         $query = $this->_model
             ->select(
+                Order::TABLE . '.' . Order::_ID,
                 Customer::TABLE . '.' . Customer::_EMAIL,
                 Customer::TABLE . '.' . Customer::_FULLNAME,
                 Customer::TABLE . '.' . Customer::_ADDRESS,
                 Customer::TABLE . '.' . Customer::_PHONENUMBER,
                 Order::TABLE . '.' . Order::_NAME,
                 Order::TABLE . '.' . Order::_STATUS,
-                Product::TABLE . '.' . Product::_NAME,
+                Product::TABLE . '.' . Product::_ID . ' as productId',
+                Product::TABLE . '.' . Product::_NAME . ' as productName',
                 Product::TABLE . '.' . Product::_IMAGE,
                 Product::TABLE . '.' . Product::_DESCRIPTION,
                 Product::TABLE . '.' . Product::_PRICE,
@@ -56,10 +58,39 @@ class OrderRepository extends EloquentRepository
             ->join(User::TABLE, User::TABLE . '.' . User::_ID, Order::TABLE . '.' . Order::_USER_ID)
             ->join(OrderProduct::TABLE, OrderProduct::TABLE . '.' . OrderProduct::_ORDER_ID, Order::TABLE . '.' . Order::_ID)
             ->join(Product::TABLE, Product::TABLE . '.' . Product::_ID, OrderProduct::TABLE . '.' . OrderProduct::_PRODUCT_ID);
-        if (!isset($orderId)) {
-            return false;
+
+        if (isset($params['orderId'])) {
+
+            $query = $query->where(Order::TABLE . '.' . Order::_ID, $params['orderId']);
         }
-        return $query->where(Order::TABLE . '.' . Order::_ID, $orderId)->get();
+
+        if (isset($params['orderName'])) {
+            $query = $query->where(Order::TABLE . '.' . Order::_NAME, 'LIKE', '%' . $params['orderName'] . '%');
+        }
+        if (isset($params['status'])) {
+            $query = $query->where(Order::TABLE . '.' . Order::_STATUS, $params['status']);
+        }
+        if (isset($params['fullName'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_FULLNAME, 'LIKE', '%' . $params['fullName'] . '%');
+        }
+        if (isset($params['email'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_EMAIL, $params['email']);
+        }
+        if (isset($params['address'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_FULLNAME, 'LIKE', '%' . $params['address'] . '%');
+        }
+        if (isset($params['phoneNumber'])) {
+            $query = $query->where(Customer::TABLE . '.' . Customer::_FULLNAME, 'LIKE', '%' . $params['phoneNumber'] . '%');
+        }
+
+        if ($params['limit'] && $params['page']) {
+            $this->setTotal($query->count());
+            $query = $query->limit($params['limit'])->offset(($params['page'] - 1) * $params['limit']);
+        }
+
+        return $query->get();
+
+
     }
 
     public function getInformationCustomerById($orderId)

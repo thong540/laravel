@@ -54,6 +54,42 @@ class OrderController extends Controller
         return $this->responseData($data);
     }
 
+    function getListOrder(Request $request)
+    {
+        $limit = $request->input('limit', 5);
+        $page = $request->input('page', 1);
+        $orderId = $request->input('orderId');
+        $orderName = $request->input('orderName');
+        $status = $request->input('status');
+        $customerName = $request->input('fullName');
+        $email = $request->input('email');
+        $address = $request->input('address');
+        $phoneNumber = $request->input('phoneNumber');
+        $params = [
+            'limit' => $limit,
+            'page' => $page,
+            'orderId' => $orderId,
+            'orderName' => $orderName,
+            'status' => $status,
+            'fullName' => $customerName,
+            'email' => $email,
+            'address' => $address,
+            'phoneNumber' => $phoneNumber
+        ];
+
+        $listData = $this->orderRepo->getListOrderDetail($params)->groupBy('id')->toArray();
+        if (!$listData) {
+            $this->message = 'No get list order';
+            goto next;
+        }
+        $data['data'] =  $listData;
+        $data['total'] = $this->orderRepo->getTotal();
+        $this->status = 'success';
+        $this->message = 'get list order';
+        next:
+        return $this->responseData($data ?? []);
+    }
+
     function createOrder(Request $request)
     {
 //        $request->validate(
@@ -253,7 +289,7 @@ class OrderController extends Controller
             [
                 'order_id' => 'required',
                 'order_name' => 'required',
-                'status'  => 'required',
+                'status' => 'required',
                 'email' => 'required',
                 'phoneNumber' => 'required',
                 'fullName' => 'required',
@@ -338,7 +374,7 @@ class OrderController extends Controller
         }, $lists);
 //        dd($currentListProducts, $listProducts);
         $currentListProducts = [];
-        foreach($lists as $key => $value) {
+        foreach ($lists as $key => $value) {
             $x = array_push($currentListProducts, ['product_id' => $key, 'quantity' => $value]);
         }
 

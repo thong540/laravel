@@ -61,7 +61,7 @@ class CategoryController extends Controller
             ]
         );
         $userInfor = (array)$request->attributes->get('user')->data;
-        if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
+        if (!$this->checkPermissionCategory($userInfor['role']->role_id, [User::ADMIN, User::MANAGER])) {
             $this->message = 'user no permission';
             goto next;
         };
@@ -101,7 +101,7 @@ class CategoryController extends Controller
             ]
         );
         $userInfor = (array)$request->attributes->get('user')->data;
-        if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
+        if (!$this->checkPermissionCategory($userInfor['role']->role_id, [User::ADMIN, User::MANAGER])) {
             $this->message = 'user no permission';
             goto next;
         };
@@ -133,12 +133,11 @@ class CategoryController extends Controller
 
         $id = $request->input('id');
         $userInfor = (array)$request->attributes->get('user')->data;
-        if (!$this->checkPermissionCategory($userInfor['role'], [User::ADMIN, User::MANAGER])) {
+        if (!$this->checkPermissionCategory($userInfor['role']->role_id, [User::ADMIN, User::MANAGER])) {
             $this->message = 'user no permission';
             goto next;
         };
-
-        $check = $this->customerRepo->delete($id);
+        $check = $this->categoryRepo->delete($id);
         if (!$check) {
             $this->message = 'No delete category';
             goto next;
