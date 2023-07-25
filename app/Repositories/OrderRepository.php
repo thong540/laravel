@@ -49,7 +49,7 @@ class OrderRepository extends EloquentRepository
                 Product::TABLE . '.' . Product::_DESCRIPTION,
                 Product::TABLE . '.' . Product::_PRICE,
                 OrderProduct::TABLE . '.' . OrderProduct::_QUANTITY,
-                User::TABLE . '.' . User::_FULLNAME . ' as nameStaff',
+                User::TABLE . '.' . User::_FULLNAME . ' as staffName',
                 User::TABLE . '.' . User::_ADDRESS,
                 User::TABLE . '.' . User::_PHONENUMBER,
                 Order::TABLE . '.' . Order::_CREATED_AT,
@@ -82,9 +82,11 @@ class OrderRepository extends EloquentRepository
         if (isset($params['phoneNumber'])) {
             $query = $query->where(Customer::TABLE . '.' . Customer::_FULLNAME, 'LIKE', '%' . $params['phoneNumber'] . '%');
         }
-
+        if (isset($params['productName'])) {
+            $query = $query->where(Product::TABLE . '.' . Product::_NAME, 'LIKE', '%'. $params['productName'] . '%');
+        }
         if ($params['limit'] && $params['page']) {
-            $this->setTotal($query->count());
+            $this->setTotal($query->get()->groupBy('id')->count());
             $query = $query->limit($params['limit'])->offset(($params['page'] - 1) * $params['limit']);
         }
 

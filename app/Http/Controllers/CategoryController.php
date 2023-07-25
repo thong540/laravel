@@ -41,7 +41,7 @@ class CategoryController extends Controller
         } else {
             $this->status = 'success';
             $this->message = 'get List Categories';
-            $data['data'] = $this->categoryRepo->getListCategory($page, $limit, $categoryId, $categoryName, $parentId);
+            $data['data'] = $this->categoryRepo->getListCategoryDetail($page, $limit, $categoryId, $categoryName, $parentId);
             $data['total'] = $this->categoryRepo->getTotal();
         }
 
@@ -49,6 +49,21 @@ class CategoryController extends Controller
 
         return $this->responseData($data);
 
+    }
+    public function findParentId(Request $request) {
+        $id = $request->input('parentId');
+        if($id <= 0) {
+            goto next;
+        }
+        $parentCategory = $this->categoryRepo->find($id)->first();
+        if (!$parentCategory) {
+            goto next;
+        }
+        $data = $parentCategory['name'];
+        $this->status = 'success';
+        $this->message = 'get parentId';
+        next:
+        return $this->responseData($data ?? []);
     }
 
     public function createCategory(Request $request)

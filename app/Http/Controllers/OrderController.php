@@ -65,6 +65,7 @@ class OrderController extends Controller
         $email = $request->input('email');
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
+        $productName = $request->input('productName');
         $params = [
             'limit' => $limit,
             'page' => $page,
@@ -74,16 +75,18 @@ class OrderController extends Controller
             'fullName' => $customerName,
             'email' => $email,
             'address' => $address,
-            'phoneNumber' => $phoneNumber
+            'phoneNumber' => $phoneNumber,
+            'productName' => $productName
         ];
 
-        $listData = $this->orderRepo->getListOrderDetail($params)->groupBy('id')->toArray();
+        $listData = $this->orderRepo->getListOrderDetail($params)->groupBy('id');
         if (!$listData) {
             $this->message = 'No get list order';
             goto next;
         }
-        $data['data'] =  $listData;
         $data['total'] = $this->orderRepo->getTotal();
+        $data['data'] =  $listData->toArray();
+
         $this->status = 'success';
         $this->message = 'get list order';
         next:
