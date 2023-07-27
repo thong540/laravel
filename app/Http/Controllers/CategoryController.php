@@ -122,8 +122,8 @@ class CategoryController extends Controller
         };
         $id = $request->input('id');
         $name = $request->input('name');
-        $parentId = $request->input('parent_id', 0);
-        $description = $request->input('description', 0);
+        $parentId = $request->input('parent_id');
+        $description = $request->input('description');
 
         $dataUpdate = [
             Category::_NAME => $name,
@@ -132,6 +132,17 @@ class CategoryController extends Controller
             Category::_UPDATED_AT => time(),
         ];
 
+        if($parentId < 0) {
+            $this->message = 'Parent category is invalid!';
+            goto next;
+        }
+        if($parentId > 0){
+            $parentIdIsValid = $this->categoryRepo->find($parentId);
+            if ($id === $parentId || !$parentIdIsValid) {
+                $this->message = 'Parent category is invalid!';
+                goto next;
+            }
+        }
         $check = $this->categoryRepo->updateById($id, $dataUpdate);
         if (!$check) {
             $this->message = 'No update category';
@@ -139,6 +150,7 @@ class CategoryController extends Controller
         }
         $this->status = 'success';
         $this->message = 'updated category';
+
         next:
         return $this->responseData();
     }

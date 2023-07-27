@@ -85,6 +85,12 @@ class OrderRepository extends EloquentRepository
         if (isset($params['productName'])) {
             $query = $query->where(Product::TABLE . '.' . Product::_NAME, 'LIKE', '%'. $params['productName'] . '%');
         }
+        if(isset($params['productId'])){
+            $query = $query->where(Product::TABLE . '.' . Product::_ID, $params['productId']);
+        }
+        if(isset($params['userName'])) {
+            $query = $query->where(User::TABLE. '.' . User::_FULLNAME, 'LIKE', '%' . $params['userName'] . '%');
+        }
         if ($params['limit'] && $params['page']) {
             $this->setTotal($query->get()->groupBy('id')->count());
             $query = $query->limit($params['limit'])->offset(($params['page'] - 1) * $params['limit']);

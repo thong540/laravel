@@ -66,6 +66,8 @@ class OrderController extends Controller
         $address = $request->input('address');
         $phoneNumber = $request->input('phoneNumber');
         $productName = $request->input('productName');
+        $productId = $request->input('productId');
+        $userName = $request->input('userName');
         $params = [
             'limit' => $limit,
             'page' => $page,
@@ -76,7 +78,9 @@ class OrderController extends Controller
             'email' => $email,
             'address' => $address,
             'phoneNumber' => $phoneNumber,
-            'productName' => $productName
+            'productName' => $productName,
+            'productId' => $productId,
+            'userName' => $userName
         ];
 
         $listData = $this->orderRepo->getListOrderDetail($params)->groupBy('id');
