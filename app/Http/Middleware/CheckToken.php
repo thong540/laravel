@@ -35,6 +35,7 @@ class CheckToken
 //            //return $data;
 //        }
 //        return $next($request);
+
         $token = $request->header('access_token');
         if (!$token) {
             $token = $request->input('access_token');

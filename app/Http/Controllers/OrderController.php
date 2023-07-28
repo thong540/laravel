@@ -33,6 +33,7 @@ class OrderController extends Controller
 
     private function checkPermissionOrder($userRole, $roleExecute = [])
     {
+
         // dd($userRole, $roleExecute);
         return in_array($userRole, $roleExecute);
     }
@@ -69,8 +70,8 @@ class OrderController extends Controller
         $productId = $request->input('productId');
         $userName = $request->input('userName');
         $params = [
-            'limit' => $limit,
-            'page' => $page,
+            'limit' => intval($limit),
+            'page' => intval($page),
             'orderId' => $orderId,
             'orderName' => $orderName,
             'status' => $status,
@@ -500,7 +501,7 @@ class OrderController extends Controller
 
         $userInfor = $request->attributes->get('user')->data;
         $userRole = $userInfor->role;
-        if (!$this->checkPermissionOrder($userRole->role_id, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
+        if (!$this->checkPermissionOrder($userRole, [Order::ADMIN, Order::MANAGER, Order::STAFF])) {
             $this->message = 'user no permission';
             goto next;
         }

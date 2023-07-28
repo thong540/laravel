@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Services\HistoryActivityService;
 use App\Repositories\CustomerRepository;
+use App\Repositories\RoleRepository;
 use App\Repositories\UserRepository;
 use App\Models\User;
 use App\Repositories\UserRoleRepository;
@@ -20,18 +21,21 @@ class AuthController extends Controller
 {
     private $userRepository;
     private $historyActivityService;
-    private  $userRoleRepo;
+    private $userRoleRepo;
+    private $roleRepo;
 
     function __construct(
-        UserRepository $userRepository,
-        UserRoleRepository $userRoleRepo,
-        HistoryActivityService $historyActivityService
+        UserRepository         $userRepository,
+        UserRoleRepository     $userRoleRepo,
+        HistoryActivityService $historyActivityService,
+        RoleRepository         $roleRepo
     )
     {
         $this->userRepository = $userRepository;
         $this->userRoleRepo = $userRoleRepo;
         $this->historyActivityService = $historyActivityService;
 //        $this->loggerRepository = $loggerRepository;
+        $this->roleRepo = $roleRepo;
 
     }
 
@@ -41,7 +45,7 @@ class AuthController extends Controller
 //        $tokenId = base64_encode(random_bytes(16));
 //        $issuedAt   = new DateTimeImmutable();
 //        $expire     = $issuedAt->modify('+6 minutes')->getTimestamp();
-        //       $serverName = "server.name";
+//        $serverName = "server.name";
 //        dd($user);
 //        $userID = $user['id'];
         $dataInsert = [];
@@ -63,7 +67,7 @@ class AuthController extends Controller
             ];
         }
         $data = [
-            'exp' => time() + 7*24 * 60 * 60,
+            'exp' => time() + 7 * 24 * 60 * 60,
             'data' => $dataInsert,
         ];
 
@@ -190,11 +194,15 @@ class AuthController extends Controller
             Logger::_ACTION => 'Register',
             Logger::_TIME => time()
         ]);
+
+        $roleName = $this->roleRepo->find($role)->first()->toArray();
+
         $data = [
             'access_token' => $token,
             'user' => [
                 'name' => $fullName,
                 'role' => $role,
+                'role_name' => $roleName['name']
             ]
         ];
         next:

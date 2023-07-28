@@ -159,6 +159,7 @@ class CategoryController extends Controller
     {
 
         $id = $request->input('id');
+
         $userInfor = (array)$request->attributes->get('user')->data;
         if (!$this->checkPermissionCategory($userInfor['role']->role_id, [User::ADMIN, User::MANAGER])) {
             $this->message = 'user no permission';
