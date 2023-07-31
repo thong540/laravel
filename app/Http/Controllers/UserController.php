@@ -8,27 +8,31 @@ use App\Repositories\UserRoleRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\DB;
+
 class UserController extends Controller
 {
     private $userRepo;
     private $userRoleRepo;
+
     public function __construct(UserRepository $userRepo, UserRoleRepository $userRoleRepo)
     {
         $this->userRepo = $userRepo;
         $this->userRoleRepo = $userRoleRepo;
     }
+
     private function checkPermissionUser($user, $roleExecutes)
     {
-        if(!is_array($user)) {
+        if (!is_array($user)) {
             return in_array($user, $roleExecutes);
         }
         foreach ($roleExecutes as $roleExecute) {
             //dd($user);
-           if ($user == $roleExecute) {
-              // dd($user['role_id'], $roleExecute);
-               return true;
-           }
-       }
+            if ($user == $roleExecute) {
+                // dd($user['role_id'], $roleExecute);
+                return true;
+            }
+        }
 
         return false;
     }
@@ -36,14 +40,14 @@ class UserController extends Controller
     function getListUser(Request $request)
     {
         $limit = $request->input('limit', 5);
-        $page = $request->input('page',1);
+        $page = $request->input('page', 1);
         $id = $request->input('id');
         $email = $request->input('email');
         $fullName = $request->input('fullName');
         $phoneNumber = $request->input('phoneNumber');
         $address = $request->input('address');
         $role = $request->input('role');
-        $listUser = $this->userRepo->listUser($page, $limit, $id ,$email, $fullName, $phoneNumber, $address, $role);
+        $listUser = $this->userRepo->listUser($page, $limit, $id, $email, $fullName, $phoneNumber, $address, $role);
         if (!$listUser) {
             $this->message = 'Error';
         }
@@ -53,11 +57,12 @@ class UserController extends Controller
         $this->message = ' List user';
         return $this->responseData($data);
     }
+
     function createUser(Request $request)
     {
         $userInfo = (array)$request->attributes->get('user')->data;
 
-        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN,User::MANAGER, User::STAFF, User::USER]);
+        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN, User::MANAGER, User::STAFF, User::USER]);
         if (!$checkPermission) {
             $this->message = 'User is not permission';
             goto next;
@@ -73,7 +78,7 @@ class UserController extends Controller
 //
 //        ]);
         $request->validate([
-           'email' => 'required',
+            'email' => 'required',
             'password' => 'required',
             'fullName' => 'required',
             'address' => 'required',
@@ -96,29 +101,49 @@ class UserController extends Controller
             User::_CREATED_AT => time(),
             User::_UPDATED_AT => time(),
         ];
-
-        $newUserId = $this->userRepo->insertGetId($dataInsert);
-        if (!$newUserId) {
+        if (!$role) {
             $this->message = 'No create a new user';
             goto next;
         }
+        try {
+            DB::beginTransaction();
+            $newUserId = $this->userRepo->insertGetId($dataInsert);
+//            if (!$newUserId) {
+//                $this->message = 'No create a new user';
+//                goto next;
+//            }
 //        dd($newUserId, intval($role));
-        $checkCreateUserRole = $this->userRoleRepo->insert([
-           'user_id' =>  $newUserId,
-            'role_id' => $role,
-            'created_at' => time(),
-            'updated_at' => time(),
-        ]);
-        if(!$checkCreateUserRole) {
+//            if($role < 0 ||  ) {
+//
+//            }
+
+           $this->userRoleRepo->insert([
+                'user_id' => $newUserId,
+                'role_id' => $role,
+                'created_at' => time(),
+                'updated_at' => time(),
+            ]);
+//            dd(123);
+
+            DB::commit();
+
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
             $this->message = 'No create a new user';
             goto next;
+
         }
+
+
         $this->status = 'success';
         $this->message = 'message';
         next:
         return $this->responseData();
 
     }
+
     function updateUser(Request $request)
     {
 //        $request->validate([
@@ -132,7 +157,7 @@ class UserController extends Controller
 //        ]);
 
         $request->validate([
-            'email' => ['required' ],
+            'email' => ['required'],
             'fullName' => ['required'],
             'address' => ['required'],
             'phoneNumber' => ['required']
@@ -141,7 +166,7 @@ class UserController extends Controller
         ]);
         $userInfo = (array)$request->attributes->get('user')->data;
 
-        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN,User::MANAGER, User::STAFF, User::USER]);
+        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN, User::MANAGER, User::STAFF, User::USER]);
         if (!$checkPermission) {
             $this->message = 'User is not permission';
             goto next;
@@ -174,7 +199,7 @@ class UserController extends Controller
         ];
         $check = $this->userRepo->update($id, $dataUpdate);
         $chekUpdate = $this->userRoleRepo->updateRoleByUserIdAndRoleId($id, $role);
-        if (!$check || !$chekUpdate ) {
+        if (!$check || !$chekUpdate) {
             $this->message = 'No update user';
             goto next;
         }
@@ -185,11 +210,12 @@ class UserController extends Controller
         return $this->responseData();
 
     }
+
     function deleteUser(Request $request)
     {
 
         $userInfo = (array)$request->attributes->get('user')->data;
-        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN,User::MANAGER, User::STAFF]);
+        $checkPermission = $this->checkPermissionUser($userInfo['role']->role_id, [User::ADMIN, User::MANAGER, User::STAFF]);
         if (!$checkPermission) {
             $this->message = 'user is not permisson';
             goto next;
